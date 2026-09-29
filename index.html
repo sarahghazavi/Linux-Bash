@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>جزوه لینوکس و بش</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Vazirmatn:wght@400;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <small>LINUX / BASH</small>
+        <strong>جزوه آموزشی</strong>
+      </div>
+      <input id="q" class="search" type="search" placeholder="جستجو: sed، آرایه، curl…">
+      <nav class="nav">
+        <a href="#linux">لینوکس و شل</a>
+        <a href="#files">فایل و مسیر</a>
+        <a href="#users">کاربر و گروه</a>
+        <a href="#packages">پکیج</a>
+        <a href="#process">پروسس و سیگنال</a>
+        <a href="#systemd">systemd</a>
+        <a href="#shortcuts">میانبر و alias</a>
+        <a href="#script">شروع اسکریپت</a>
+        <a href="#vars">متغیرها</a>
+        <a href="#strings">رشته‌ها</a>
+        <a href="#arrays">آرایه‌ها</a>
+        <a href="#tests">شرط و مقایسه</a>
+        <a href="#loops">حلقه‌ها و seq</a>
+        <a href="#wc">wc</a>
+        <a href="#headtail">head و tail</a>
+        <a href="#find">find</a>
+        <a href="#sort">sort</a>
+        <a href="#sed">sed</a>
+        <a href="#awk">awk</a>
+        <a href="#regex">رجکس عملی</a>
+        <a href="#curl">curl</a>
+        <a href="#jq">jq</a>
+        <a href="#eval">eval</a>
+      </nav>
+    </aside>
+    <main>
+      <header class="hero">
+        <h1>لینوکس و بش</h1>
+      </header>
+
+      <section id="linux">
+        <h2>لینوکس و شل</h2>
+        <p>لینوکس متن‌باز است و معمولا سریع‌تر از یک سیستم بسته راه‌اندازی می‌شود. <b>ترمینال</b> پنجره‌ای است که حرف
+          می‌زنی. <b>شل</b> برنامه‌ای است که آن حرف را می‌فهمد و به کرنل می‌سپارد.
+          بش یعنی Bourne-Again Shell. zsh همان خانواده است با تکمیل بهتر. پاورشل مال ویندوز است.</p>
+        <p>اگر خط فرمان با <code>$</code> تمام شود کاربر عادی هستی. اگر با <code>#</code> تمام شود root هستی.</p>
+        <table>
+          <tr>
+            <th>مسیر</th>
+            <th>چی داخلش است</th>
+          </tr>
+          <tr>
+            <td><code>/bin</code> و <code>/usr/bin</code></td>
+            <td>دستورهای معمولی</td>
+          </tr>
+          <tr>
+            <td><code>/sbin</code> و <code>/usr/sbin</code></td>
+            <td>دستورهای مدیریتی</td>
+          </tr>
+          <tr>
+            <td><code>/etc</code></td>
+            <td>تنظیمات، از جمله کاربران و گروه‌ها</td>
+          </tr>
+          <tr>
+            <td><code>/home</code></td>
+            <td>خانهٔ کاربران</td>
+          </tr>
+          <tr>
+            <td><code>/var</code></td>
+            <td>لاگ و داده‌ای که عوض می‌شود</td>
+          </tr>
+          <tr>
+            <td><code>/tmp</code></td>
+            <td>فایل موقت</td>
+          </tr>
+        </table>
+        <div class="cmd"><b>man cmd</b><span>راهنمای کامل</span></div>
+        <div class="cmd"><b>cmd --help</b><span>خلاصهٔ فلگ‌ها</span></div>
+        <div class="cmd"><b>apropos keyword</b><span>جستجو در راهنماها؛ وقتی اسم دستور را نمی‌دانی</span></div>
+        <div class="cmd"><b>which cmd</b><span>کدام فایل اجرا می‌شود</span></div>
+        <div class="cmd"><b>type cmd</b><span>دستور است، alias است، یا تابع</span></div>
+      </section>
+
+      <section id="files">
+        <h2>فایل و مسیر</h2>
+        <table>
+          <tr>
+            <th>دستور</th>
+            <th>کار</th>
+            <th>فلگ مهم</th>
+          </tr>
+          <tr>
+            <td><code>pwd</code></td>
+            <td>مسیر فعلی</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><code>ls</code></td>
+            <td>لیست</td>
+            <td><code>-l</code> جزئیات، <code>-a</code> مخفی‌ها، <code>-h</code> اندازهٔ خوانا، <code>-t</code> بر اساس
+              زمان</td>
+          </tr>
+          <tr>
+            <td><code>cd</code></td>
+            <td>عوض کردن مسیر</td>
+            <td>بدون آرگومان می‌رود خانه. <code>cd -</code> مسیر قبلی (<code>OLDPWD</code>). <code>cd /</code> ریشه</td>
+          </tr>
+          <tr>
+            <td><code>cat</code></td>
+            <td>چسباندن و نشان دادن فایل</td>
+            <td><code>-n</code> شمارهٔ خط</td>
+          </tr>
+          <tr>
+            <td><code>cp</code></td>
+            <td>کپی</td>
+            <td><code>-r</code> پوشه، <code>-i</code> قبل از بازنویسی بپرس، <code>-a</code> کپی با حفظ زمان و لینک</td>
+          </tr>
+          <tr>
+            <td><code>mv</code></td>
+            <td>جابه‌جایی یا تغییر نام</td>
+            <td><code>-i</code> پرسیدن، <code>-n</code> بازنویسی نکن</td>
+          </tr>
+          <tr>
+            <td><code>rm</code></td>
+            <td>حذف</td>
+            <td><code>-r</code> بازگشتی، <code>-f</code> بدون پرسش. <code>rm -rf</code> برگشت ندارد</td>
+          </tr>
+          <tr>
+            <td><code>rmdir</code></td>
+            <td>حذف پوشهٔ خالی</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><code>mkdir</code></td>
+            <td>ساخت پوشه</td>
+            <td><code>-p</code> والدهای نبوده را هم بساز</td>
+          </tr>
+          <tr>
+            <td><code>touch</code></td>
+            <td>فایل خالی، یا به‌روز کردن زمان</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><code>less</code></td>
+            <td>خواندن صفحه‌به‌صفحه</td>
+            <td><code>/</code> جستجو، <code>q</code> خروج</td>
+          </tr>
+        </table>
+        <h3>نوشتن داخل فایل</h3>
+        <pre>echo "یک خط" &gt; notes.txt      # فایل را از نو می‌نویسد
+echo "خط بعد" &gt;&gt; notes.txt    # به ته فایل اضافه می‌کند
+cat &gt; notes.txt               # تا Ctrl+D از کیبورد بخواند
+cat &lt;&lt; EOF &gt; notes.txt
+خط اول
+خط دوم
+EOF</pre>
+        <div class="note"><strong>سه تا مسیر خاص</strong>
+          <code>.</code> همین پوشه، <code>..</code> پوشهٔ بالا، <code>~</code> خانهٔ کاربر. <code>/dev/null</code> سطل
+          است؛ خروجی را آنجا بریزی تا صفحه شلوغ نشود.
+        </div>
+        <h3>اطلاعات سیستم</h3>
+        <table>
+          <tr>
+            <th>دستور</th>
+            <th>کار</th>
+          </tr>
+          <tr>
+            <td><code>id</code></td>
+            <td>uid و گروه‌های کاربر فعلی</td>
+          </tr>
+          <tr>
+            <td><code>hostname</code></td>
+            <td>اسم ماشین</td>
+          </tr>
+          <tr>
+            <td><code>uname -a</code></td>
+            <td>همهٔ مشخصات کرنل. <code>-r</code> فقط نسخه</td>
+          </tr>
+          <tr>
+            <td><code>env</code></td>
+            <td>متغیرهای محیطی</td>
+          </tr>
+          <tr>
+            <td><code>lsblk</code></td>
+            <td>دیسک‌ها</td>
+          </tr>
+          <tr>
+            <td><code>lsusb</code></td>
+            <td>دستگاه‌های USB</td>
+          </tr>
+          <tr>
+            <td><code>lsof</code></td>
+            <td>فایل‌های باز. <code>lsof -i :80</code> کی پورت ۸۰ را گرفته</td>
+          </tr>
+          <tr>
+            <td><code>ip a</code></td>
+            <td>آدرس شبکه. <code>ifconfig</code> نسخهٔ قدیمی‌تر است</td>
+          </tr>
+          <tr>
+            <td><code>ss -lntup</code></td>
+            <td>سوکت‌های در حال گوش دادن. <code>netstat</code> قدیمی‌تر است</td>
+          </tr>
+        </table>
+      </section>
+
+      <section id="users">
+        <h2>کاربر و گروه</h2>
+        <table>
+          <tr>
+            <th>دستور</th>
+            <th>کار</th>
+          </tr>
+          <tr>
+            <td><code>adduser name</code></td>
+            <td>کاربر کامل: خانه، پسورد، بش. تعاملی است</td>
+          </tr>
+          <tr>
+            <td><code>useradd name</code></td>
+            <td>فقط رکورد کاربر. خانه و بش را خودت با <code>-m</code> و <code>-s /bin/bash</code> می‌دهی</td>
+          </tr>
+          <tr>
+            <td><code>passwd name</code></td>
+            <td>عوض کردن پسورد</td>
+          </tr>
+          <tr>
+            <td><code>usermod -aG docker name</code></td>
+            <td>اضافه به گروه، بدون پاک کردن گروه‌های قبلی. <code>-a</code> را جا نگذار</td>
+          </tr>
+          <tr>
+            <td><code>userdel -r name</code></td>
+            <td>حذف کاربر. <code>-r</code> خانه را هم برمی‌دارد</td>
+          </tr>
+          <tr>
+            <td><code>groupadd name</code></td>
+            <td>گروه تازه</td>
+          </tr>
+          <tr>
+            <td><code>gpasswd -d user group</code></td>
+            <td>بیرون کردن از گروه</td>
+          </tr>
+          <tr>
+            <td><code>groupdel name</code></td>
+            <td>حذف گروه. کاربرها سر جایشان می‌مانند</td>
+          </tr>
+          <tr>
+            <td><code>groups</code></td>
+            <td>گروه‌های کاربر فعلی</td>
+          </tr>
+          <tr>
+            <td><code>sudo cmd</code></td>
+            <td>یک دستور با حق root</td>
+          </tr>
+          <tr>
+            <td><code>sudo -i</code></td>
+            <td>شل root</td>
+          </tr>
+          <tr>
+            <td><code>su - name</code></td>
+            <td>عوض کردن کاربر، با محیط خانهٔ او. خط تیره مهم است</td>
+          </tr>
+          <tr>
+            <td><code>sudo visudo</code></td>
+            <td>ویرایش امن <code>/etc/sudoers</code></td>
+          </tr>
+        </table>
+        <p>لیست کاربران در <code>/etc/passwd</code> است و گروه‌ها در <code>/etc/group</code>. پسورد واقعی در
+          <code>/etc/shadow</code> است و فقط root می‌خواندش.
+        </p>
+      </section>
+
+      <section id="packages">
+        <h2>پکیج</h2>
+        <p><code>dpkg -i file.deb</code> یک بستهٔ دانلودشده را نصب می‌کند و وابستگی را خودش نمی‌آورد. <code>apt</code>
+          مخزن را می‌گردد و وابستگی را هم می‌کشد.</p>
+        <pre>sudo apt update
+sudo apt install curl jq
+sudo apt --fix-broken install
+apt list --installed
+apt show curl
+sudo apt remove curl          # برنامه می‌رود، تنظیمات می‌ماند
+sudo apt purge curl           # تنظیمات هم می‌رود
+sudo apt upgrade
+sudo apt full-upgrade</pre>
+        <p><code>snap install name</code> برای برنامه‌هایی است که در مخزن apt نیستند.
+          <code>pip install -r requirements.txt</code> پکیج پایتون را از روی فایل نیازمندی نصب می‌کند. روی سیستم از
+          <code>pip3</code> استفاده کن، نه اینکه پکیج سیستم را با pip قاطی کنی.
+        </p>
+      </section>
+
+      <section id="process">
+        <h2>پروسس و سیگنال</h2>
+        <p>پروسس یک اجرای زنده از برنامه است. دیمون پروسسی است که در پس‌زمینه می‌ماند؛ اسم خیلی‌هایشان به <code>d</code>
+          ختم می‌شود، مثل <code>sshd</code>.</p>
+        <table>
+          <tr>
+            <th>دستور</th>
+            <th>کار</th>
+          </tr>
+          <tr>
+            <td><code>ps aux</code></td>
+            <td><code>a</code> همهٔ ترمینال‌ها، <code>u</code> کاربر، <code>x</code> حتی بدون ترمینال</td>
+          </tr>
+          <tr>
+            <td><code>ps -u name</code></td>
+            <td>فقط پروسس‌های یک کاربر</td>
+          </tr>
+          <tr>
+            <td><code>ps -ef</code></td>
+            <td>فرمت دیگر، با ستون PPID</td>
+          </tr>
+          <tr>
+            <td><code>pstree</code></td>
+            <td>درخت. systemd معمولاً pid برابر ۱ است</td>
+          </tr>
+          <tr>
+            <td><code>pgrep -a nginx</code></td>
+            <td>pid از روی اسم. <code>-a</code> خط فرمان را هم نشان می‌دهد</td>
+          </tr>
+          <tr>
+            <td><code>top</code> / <code>htop</code></td>
+            <td>مصرف زنده. در top با <code>q</code> بیا بیرون</td>
+          </tr>
+          <tr>
+            <td><code>jobs</code></td>
+            <td>کارهای همین شل</td>
+          </tr>
+          <tr>
+            <td><code>bg %1</code> / <code>fg %1</code></td>
+            <td>پس‌زمینه و پیش‌زمینه</td>
+          </tr>
+          <tr>
+            <td><code>cmd &amp;</code></td>
+            <td>از اول در پس‌زمینه</td>
+          </tr>
+        </table>
+        <p><code>Ctrl+C</code> سیگنال INT می‌فرستد. <code>Ctrl+Z</code> توقف (STOP) است، مرگ نیست. بعد با
+          <code>fg</code> یا <code>bg</code> برش می‌گردانی.
+        </p>
+        <table>
+          <tr>
+            <th>شماره</th>
+            <th>اسم</th>
+            <th>معنی</th>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>SIGHUP</td>
+            <td>ترمینال بسته شد؛ بعضی سرویس‌ها با این reload می‌شوند</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>SIGINT</td>
+            <td>Ctrl+C</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>SIGQUIT</td>
+            <td>خروج همراه core dump</td>
+          </tr>
+          <tr>
+            <td>9</td>
+            <td>SIGKILL</td>
+            <td>کشتن اجباری. برنامه فرصت تمیزکاری ندارد</td>
+          </tr>
+          <tr>
+            <td>15</td>
+            <td>SIGTERM</td>
+            <td>درخواست معمولی بستن. پیش‌فرض <code>kill</code></td>
+          </tr>
+          <tr>
+            <td>18</td>
+            <td>SIGCONT</td>
+            <td>ادامه بعد از توقف</td>
+          </tr>
+          <tr>
+            <td>19</td>
+            <td>SIGSTOP</td>
+            <td>توقف اجباری</td>
+          </tr>
+          <tr>
+            <td>20</td>
+            <td>SIGTSTP</td>
+            <td>Ctrl+Z</td>
+          </tr>
+        </table>
+        <pre>kill 1234            # SIGTERM
+kill -9 1234         # SIGKILL
+kill -l              # لیست سیگنال‌ها
+ping -c 3 1.1.1.1    # سه بسته، بعد تمام
+ping -q -c 2 -W 1 example.com</pre>
+        <p><code>grep</code> یعنی global regular expression print: خط‌هایی را که الگو دارند جدا می‌کند.</p>
+        <pre>ps aux | grep nginx
+grep -n "error" /var/log/syslog     # شمارهٔ خط
+grep -Rni "TODO" .                  # بازگشتی، شماره، بدون حساسیت به حروف
+grep -v "^#" config | grep -v "^$"  # خط‌های کامنت و خالی را حذف کن</pre>
+      </section>
+
+      <section id="systemd">
+        <h2>systemd</h2>
+        <p>موقع بوت، کرنل systemd را صدا می‌زند. systemd فایل‌سیستم را سوار می‌کند و سرویس‌ها را بالا می‌آورد. هر چیزی
+          که کنترل می‌کند یک unit است: <code>service</code>، <code>socket</code>، <code>timer</code>،
+          <code>mount</code>، <code>target</code>، <code>device</code>.
+        </p>
+        <pre>systemctl start nginx
+systemctl stop nginx
+systemctl status nginx
+systemctl restart nginx          # می‌کشد و دوباره شروع می‌کند
+systemctl reload nginx           # تنظیم تازه، اگر خود سرویس بلد باشد
+systemctl reload-or-restart nginx
+systemctl enable nginx           # با بوت بیاید بالا
+systemctl disable nginx
+systemctl is-active nginx
+systemctl is-enabled nginx
+systemctl list-units
+systemctl list-units -t service
+systemctl list-unit-files        # حتی unitهایی که لود نشده‌اند
+journalctl -u nginx -e           # لاگ همان سرویس، برو آخر فایل
+journalctl -xe                   # خطاهای اخیر کل سیستم
+journalctl -u nginx --since "1 hour ago"</pre>
+      </section>
+
+      <section id="shortcuts">
+        <h2>میانبر و alias</h2>
+        <table>
+          <tr>
+            <th>کلید</th>
+            <th>کار</th>
+          </tr>
+          <tr>
+            <td>Ctrl+A / Ctrl+E</td>
+            <td>اول و آخر خط</td>
+          </tr>
+          <tr>
+            <td>Ctrl+U / Ctrl+K</td>
+            <td>برش تا اول خط / تا آخر خط</td>
+          </tr>
+          <tr>
+            <td>Ctrl+Y</td>
+            <td>چسباندن چیزی که بریدی</td>
+          </tr>
+          <tr>
+            <td>Ctrl+W یا Option+Backspace</td>
+            <td>حذف کلمهٔ قبلی</td>
+          </tr>
+          <tr>
+            <td>Ctrl+R</td>
+            <td>جستجو در تاریخچه</td>
+          </tr>
+          <tr>
+            <td>Ctrl+L</td>
+            <td>پاک کردن صفحه</td>
+          </tr>
+          <tr>
+            <td>Ctrl+X سپس Ctrl+E</td>
+            <td>خط فعلی در ادیتور</td>
+          </tr>
+          <tr>
+            <td><code>!!</code></td>
+            <td>آخرین دستور. <code>sudo !!</code> خیلی به کار می‌آید</td>
+          </tr>
+        </table>
+        <pre>alias ll="ls -alF"
+alias gs="git status"
+unalias ll
+# دائمی: همین خط‌ها را در ~/.bashrc بگذار و بعد:
+source ~/.bashrc</pre>
+      </section>
+
+      <section id="script">
+        <h2>شروع اسکریپت</h2>
+        <pre>#!/usr/bin/env bash
+set -euo pipefail
+# -e  با اولین خطا خارج شو
+# -u  متغیر تعریف‌نشده خطا است
+# -o pipefail  خطای وسط پایپ گم نشود
+
+chmod +x script.sh
+./script.sh</pre>
+        <p><code>exit 0</code> یعنی موفق. هر عدد غیر صفر یعنی شکست. <code>exit 1</code> قرارداد معمول خطای عمومی است.
+        </p>
+      </section>
+
+      <section id="vars">
+        <h2>متغیرها</h2>
+        <div class="pitfall"><strong>فاصله دور = مقدار را خراب می‌کند</strong>
+          <code>name = "sara"</code> یعنی دستور <code>name</code> را با دو آرگومان اجرا کن. درستش
+          <code>name="sara"</code> است.
+        </div>
+        <pre>name="sara"
+echo "$name"
+echo "${name}_notes"     # اگر بچسبانی به حرف، آکولاد لازم است
+
+read -r city                          # یک خط، بدون تفسیر \
+read -r -p "شهر: " city               # پیام می‌دهد و در city ذخیره می‌کند
+echo "سلام $city"
+
+# REPLY فقط وقتی پر می‌شود که اسم متغیر ندهی
+read -r -p "ادامه؟ "
+echo "$REPLY"</pre>
+        <div class="note"><strong>read -p ذخیره می‌کند</strong>
+          اگر بعد از پیام اسم متغیر باشد، مقدار آنجاست. <code>-r</code> یعنی بک‌اسلش را معمولی بخوان، نه اینکه ورودی خام
+          نباشد.
+        </div>
+        <h3>آرگومان‌های اسکریپت</h3>
+        <pre>./script.sh "DevOps notes" extra
+# $0 = خود اسکریپت
+# $1 = DevOps notes
+# $2 = extra
+# $# = تعداد آرگومان
+# $@ = همه، جدا جدا
+# $* = همه، چسبیده با IFS
+
+title="${*:2}"    # از آرگومان دوم تا آخر، یک رشته
+rest="${@:2}"     # همان، ولی برای پاس دادن دوباره بهتر است</pre>
+        <div class="note"><strong><code>${*:2}</code> تکهٔ یک رشته نیست</strong>
+          این از پارامترهای مکانی است. اگر اسکریپت را این‌طور صدا بزنی: <code>./script.sh save "my title here"</code>
+          آن‌وقت <code>$1</code> برابر <code>save</code> است و <code>title="${*:2}"</code> می‌شود
+          <code>my title here</code>. برای بریدن خود یک متغیر بخش رشته‌ها را ببین.
+        </div>
+        <pre>name="$1"
+shift             # $2 می‌آید جای $1، و بقیه یکی جلو می‌آیند
+echo "باقی: $#"</pre>
+        <h3>خروجی دستور را بریز داخل متغیر</h3>
+        <pre>now=$(date +%F)
+count=$(wc -l &lt; /etc/passwd)
+files=$(find . -name "*.sh")
+
+# کوت کردن مهم است، وگرنه فاصله خط را می‌شکند
+echo "$now"
+printf "%s\n" "$files"</pre>
+        <h3>محیط و حساب</h3>
+        <pre>export EDITOR="vim"          # فرزندها (اسکریپت، sudo -E) می‌بینند
+# بدون export فقط همین شل می‌بیند. با بستن ترمینال هم می‌رود.
+# دائمی: export را در ~/.bashrc بگذار
+
+echo $(( 2 + 3 * 4 ))        # 14
+echo $(( end - 1 ))
+a=10
+echo $(( a += 1 ))           # 11
+printf "%s\n" "$a"</pre>
+        <div class="card">
+          <p>چهار شکل مقدار پیش‌فرض، وقتی متغیر خالی یا تعریف‌نشده است:</p>
+          <pre>echo "${port:-8080}"     # اگر خالی بود 8080 نشان بده، port عوض نمی‌شود
+echo "${port:=8080}"     # اگر خالی بود ست کن و نشان بده
+echo "${port:?لازم است}"  # اگر خالی بود خطا و خروج
+echo "${port:+set}"      # فقط اگر مقدار داشت، کلمهٔ set را نشان بده</pre>
+        </div>
+      </section>
+
+      <section id="strings">
+        <h2>رشته‌ها: ساختن، چسباندن، بریدن</h2>
+        <pre>first="Linux"
+second="Bash"
+both="$first $second"          # Linux Bash
+joined="${first}${second}"     # LinuxBash
+line="${first}, notes"         # Linux, notes
+
+# printf امن‌تر از echo است، به‌خصوص اگر رشته با - شروع شود
+printf "%s/%s\n" "$first" "$second"
+
+# چند خط
+note=$(printf "%s\n%s\n" "خط ۱" "خط ۲")</pre>
+        <h3>اندیس و طول</h3>
+        <p>اندیس از صفر شروع می‌شود. شکل کلی: <code>${var:offset:length}</code></p>
+        <pre>title="DevOps Notes"
+echo "${#title}"        # 12
+echo "${title:0:6}"     # DevOps
+echo "${title:7}"       # Notes
+echo "${title: -5}"     # Notes   فاصله قبل از منفی لازم است
+echo "${title:7:3}"     # Not</pre>
+        <h3>کندن پیشوند و پسوند</h3>
+        <pre>file="backup.tar.gz"
+echo "${file#*.}"       # tar.gz     کوتاه‌ترین پیشوند تا نقطه
+echo "${file##*.}"      # gz         بلندترین
+echo "${file%.*}"       # backup.tar کوتاه‌ترین پسوند
+echo "${file%%.*}"      # backup     بلندترین
+
+url="https://example.com/a"
+echo "${url#https://}"  # example.com/a
+echo "${url%/a}"        # https://example.com</pre>
+        <h3>جایگزینی</h3>
+        <pre>text="a|b|a"
+echo "${text/a/A}"      # A|b|a   اولین
+echo "${text//a/A}"     # A|b|A   همه
+echo "${text//|/ }"     # a b a</pre>
+      </section>
+
+      <section id="arrays">
+        <h2>آرایه‌ها</h2>
+        <p>آرایهٔ معمولی اندیس عددی دارد. آرایهٔ انجمنی با <code>declare -A</code> کلید رشته‌ای دارد.</p>
+        <pre>hours=()                  # خالی
+hours[0]=1
+hours[3]=1                # اندیس ۱ و ۲ خالی می‌مانند
+echo "${hours[0]}"
+echo "${hours[@]}"        # همهٔ مقدارها
+echo "${#hours[@]}"       # تعداد خانه‌های پر
+echo "${!hours[@]}"       # خود اندیس‌ها: 0 3
+
+hours+=(9)                # به ته اضافه کن
+unset 'hours[3]'          # یک خانه را پاک کن، نه کل آرایه
+
+days=(mon tue wed)
+for day in "${days[@]}"; do
+  echo "$day"
+done</pre>
+        <div class="pitfall"><strong>ستاره در برابر @</strong>
+          <code>"${hours[@]}"</code> هر خانه یک کلمه است. <code>"${hours[*]}"</code> همه را با فاصله به یک رشته تبدیل
+          می‌کند. داخل حلقه تقریباً همیشه @ را با کوت بخواه.
+        </div>
+        <pre># برش آرایه: از اندیس ۱، دو خانه
+echo "${days[@]:1:2}"     # tue wed
+
+# نقشه
+declare -A weather
+weather[tehran]="sunny"
+weather[shiraz]="wind"
+echo "${weather[tehran]}"
+for city in "${!weather[@]}"; do
+  echo "$city ${weather[$city]}"
+done</pre>
+        <h3>پر کردن آرایه از روی بازه</h3>
+        <pre>start=0
+end=5
+hours=()
+for i in $(seq "$start" "$((end - 1))"); do
+  hours[i]=1
+done
+# hours[0] تا hours[4] برابر ۱ است
+declare -p hours</pre>
+        <p>جایگزین تمیزتر، بدون <code>seq</code>:</p>
+        <pre>for ((i = start; i &lt; end; i++)); do
+  hours[i]=1
+done</pre>
+      </section>
+
+      <section id="tests">
+        <h2>شرط و مقایسه</h2>
+        <p>در جزوهٔ اول، علامت‌های مقایسه جابه‌جا نوشته شده بود. داخل <code>[[ ]]</code> برای عدد از این‌ها استفاده کن:
+        </p>
+        <table>
+          <tr>
+            <th>معنی</th>
+            <th>عدد در [[ ]]</th>
+            <th>در (( ))</th>
+          </tr>
+          <tr>
+            <td>کوچک‌تر</td>
+            <td><code>-lt</code></td>
+            <td><code>&lt;</code></td>
+          </tr>
+          <tr>
+            <td>کوچک‌تر یا مساوی</td>
+            <td><code>-le</code></td>
+            <td><code>&lt;=</code></td>
+          </tr>
+          <tr>
+            <td>بزرگ‌تر</td>
+            <td><code>-gt</code></td>
+            <td><code>&gt;</code></td>
+          </tr>
+          <tr>
+            <td>بزرگ‌تر یا مساوی</td>
+            <td><code>-ge</code></td>
+            <td><code>&gt;=</code></td>
+          </tr>
+          <tr>
+            <td>مساوی / نامساوی</td>
+            <td><code>-eq</code> / <code>-ne</code></td>
+            <td><code>==</code> / <code>!=</code></td>
+          </tr>
+        </table>
+        <p>برای رشته داخل <code>[[ ]]</code>: <code>==</code> و <code>!=</code>. علامت <code>&lt;</code> روی رشته ترتیب
+          حروف است، نه اندازهٔ عدد. <code>"10" &lt; "9"</code> در ترتیب حروف درست است و در حساب غلط.</p>
+        <pre>if [[ "$1" == "start" ]]; then
+  echo "روشن"
+elif [[ -z "$1" ]]; then
+  echo "آرگومان نداده‌ای"
+else
+  echo "ناشناخته"
+fi
+
+count=3
+if (( count &gt; 0 )); then
+  echo "هست"
+fi
+
+case "$1" in
+  start) systemctl start nginx ;;
+  stop)  systemctl stop nginx ;;
+  *)     echo "start یا stop" ; exit 1 ;;
+esac</pre>
+        <table>
+          <tr>
+            <th>تست فایل</th>
+            <th>معنی</th>
+          </tr>
+          <tr>
+            <td><code>-e</code> / <code>-f</code> / <code>-d</code></td>
+            <td>وجود دارد / فایل معمولی / پوشه</td>
+          </tr>
+          <tr>
+            <td><code>-r</code> / <code>-w</code> / <code>-x</code></td>
+            <td>خواندنی / نوشتنی / اجرایی</td>
+          </tr>
+          <tr>
+            <td><code>-s</code></td>
+            <td>وجود دارد و خالی نیست</td>
+          </tr>
+          <tr>
+            <td><code>-z</code> / <code>-n</code></td>
+            <td>رشته خالی / رشته ناتهی</td>
+          </tr>
+        </table>
+      </section>
+
+      <section id="loops">
+        <h2>حلقه‌ها و seq</h2>
+        <pre>while [[ "$n" -lt 3 ]]; do
+  echo "$n"
+  n=$((n + 1))
+done
+
+until [[ -f /tmp/ready ]]; do
+  sleep 1
+done
+
+while IFS= read -r line; do
+  echo "خط: $line"
+done &lt; cities.txt</pre>
+        <h3>for با لیست ثابت</h3>
+        <pre>for x in google.com bing.com example.com; do
+  if ping -q -c 2 -W 1 "$x" &gt; /dev/null; then
+    echo "$x is up"
+  else
+    echo "$x is down"
+  fi
+done
+
+# {1..10} فقط وقتی هر دو سر عدد ثابت باشند
+for i in {1..10}; do echo "$i"; done</pre>
+        <div class="pitfall"><strong>بازهٔ متغیر با آکولاد ساخته نمی‌شود</strong>
+          بش <code>{ }</code> را قبل از گذاشتن مقدار متغیر باز می‌کند. پس <code>{$start..$end}</code> همان متن را
+          می‌دهد، نه اعداد را. یا <code>seq</code> یا حلقهٔ حسابی.
+        </div>
+        <pre>start=2
+end=6
+for i in $(seq "$start" "$((end - 1))"); do
+  hours[i]=1
+done
+# i = 2 3 4 5
+
+# گام
+seq 0 2 10          # 0 2 4 6 8 10
+
+# شکل بومی بش، بدون برنامهٔ خارجی
+for ((i = start; i &lt; end; i++)); do
+  hours[i]=1
+done</pre>
+        <h3>هوا، با اسم متغیر درست</h3>
+        <pre>for city in $(cat cities.txt); do
+  weather=$(curl -fsS "http://wttr.in/${city}?format=3")
+  echo "The weather for $weather"
+done</pre>
+        <p>اگر اسم شهر فاصله دارد، به‌جای <code>$(cat ...)</code> از <code>while read</code> استفاده کن. cat خط را از
+          روی فاصله می‌شکند.</p>
+      </section>
+
+      <section id="wc">
+        <h2>wc</h2>
+        <p>word count. بدون فلگ سه عدد می‌دهد: خط، کلمه، بایت.</p>
+        <pre>wc notes.txt
+wc -l notes.txt          # خط
+wc -w notes.txt          # کلمه
+wc -c notes.txt          # بایت
+wc -m notes.txt          # نویسه، برای فارسی مهم است
+wc -l *.sh               # هر فایل و یک جمع
+
+# عدد خالی، بدون اسم فایل
+lines=$(wc -l &lt; notes.txt)
+echo "$lines"</pre>
+      </section>
+
+      <section id="headtail">
+        <h2>head و tail: یک خط مشخص</h2>
+        <pre>head -n 10 file          # ده خط اول. پیش‌فرض همین است
+tail -n 10 file          # ده خط آخر
+tail -n +15 file         # از خط ۱۵ تا آخر
+head -n 20 file | tail -n 1    # فقط خط ۲۰
+tail -f file             # زنده، برای لاگ
+tail -n 50 -f /var/log/syslog</pre>
+        <p>برای یک خط، این‌ها مستقیم‌ترند:</p>
+        <pre>sed -n '20p' file
+awk 'NR == 20' file
+# بازه
+sed -n '15,20p' file
+awk 'NR &gt;= 15 &amp;&amp; NR &lt;= 20' file</pre>
+      </section>
+
+      <section id="find">
+        <h2>find</h2>
+        <pre>find . -name "*.sh"                 # اسم، حساس به حروف
+find . -iname "readme*"             # بدون حساسیت
+find . -type f -name "*.log"        # فقط فایل. d پوشه، l لینک
+find . -type f -mtime -1            # تغییر در ۲۴ ساعت اخیر
+find . -type f -size +10M           # بزرگ‌تر از ۱۰ مگابایت
+find . -type d -empty
+find /var/log -name "*.gz" -mtime +30 -delete
+
+find . -name "*.sh" -print0 | xargs -0 chmod +x
+find . -type f -name "*.sh" -exec shellcheck {} \;</pre>
+        <div class="note"><strong>مسیر را کوت کن</strong>
+          <code>-name "*.sh"</code> را شل نباید قبل از find باز کند. کوت جلوی این کار را می‌گیرد.
+        </div>
+      </section>
+
+      <section id="sort">
+        <h2>sort</h2>
+        <pre>sort names.txt
+sort -r names.txt            # برعکس
+sort -u names.txt            # یکتا. برای خط تکراری
+sort -n numbers.txt          # عددی، وگرنه 10 قبل از 2 می‌آید
+sort -h sizes.txt            # 1K 2M 3G
+sort -t'|' -k2,2 -n data     # جداکننده | و ستون دوم عددی
+sort -t',' -k1,1 -k2,2n file # ستون ۱ متنی، ستون ۲ عددی
+sort -o out.txt in.txt       # خروجی در فایل
+
+# تکراری‌ها
+sort file | uniq
+sort file | uniq -c          # با تعداد
+sort file | uniq -d          # فقط آن‌هایی که تکرار شده‌اند</pre>
+      </section>
+
+      <section id="sed">
+        <h2>sed</h2>
+        <p>جریان متن را خط‌به‌خط عوض می‌کند. <code>s</code> یعنی substitute. جداکننده لزوماً اسلش نیست؛ وقتی با مسیر کار
+          داری <code>#</code> خواناتر است.</p>
+        <pre>sed 's/foo/bar/' file            # اولین foo در هر خط
+sed 's/foo/bar/g' file           # همه
+sed -n 's/foo/bar/p' file        # فقط خط‌هایی که عوض شدند
+sed -n '5p' file                 # خط ۵
+sed -n '5,10p' file
+sed '5,10d' file                 # این خط‌ها را حذف کن
+sed '/^#/d' file                 # خط‌های کامنت
+sed '/error/!d' file             # فقط خط‌های error بماند
+
+name=$(printf "%s" "$name" | sed 's/|//g')
+name=$(printf "%s" "$name" | sed 's/^"*//; s/"*$//')
+name=$(printf "%s" "$name" | sed "s#|$url\$##")</pre>
+        <p><code>^"*"</code> یعنی ابتدای خط و هر تعداد دابل‌کوت. <code>"*$</code> یعنی دابل‌کوت‌های انتهای خط.
+          <code>|$url$</code> یعنی یک پایپ و خود url دقیقاً در انتهای خط.
+        </p>
+        <div class="pitfall"><strong>sed -i روی مک و لینوکس یکی نیست</strong>
+          لینوکس: <code>sed -i 's/a/b/g' file</code>. مک: <code>sed -i '' 's/a/b/g' file</code>. برای جزوه، خروجی را در
+          فایل تازه بریز تا غافلگیر نشوی: <code>sed 's/a/b/g' file &gt; file.new</code>
+        </div>
+      </section>
+
+      <section id="awk">
+        <h2>awk</h2>
+        <p>هر خط را به ستون می‌شکند. <code>$1</code> ستون اول است، <code>$NF</code> ستون آخر، <code>NF</code> تعداد
+          ستون، <code>NR</code> شمارهٔ خط.</p>
+        <pre>awk '{ print $1 }' file
+awk -F'|' '{ print $NF }' file          # جداکننده پایپ، ستون آخر
+awk -F: '{ print $1, $3 }' /etc/passwd  # اسم و uid
+awk -F: '$3 &gt;= 1000 { print $1 }' /etc/passwd
+awk 'NR == 5' file
+awk 'NR &gt; 1 { print }' file             # بدون هدر
+awk '{ sum += $1 } END { print sum }' numbers.txt</pre>
+        <p>در مثال بوکمارک، url ستون آخر است:</p>
+        <pre>url=$(printf "%s" "$line" | awk -F'|' '{ print $NF }')</pre>
+      </section>
+
+      <section id="regex">
+        <h2>رجکس عملی</h2>
+        <p>یک خط مثل <code>"نام"|https://example.com</code> را به اسم و آدرس بشکن. جداکننده <code>|</code> است و آدرس
+          آخرین ستون است، چون خود اسم هم ممکن است پایپ داشته باشد.</p>
+        <pre>line='"Linux | notes"|https://example.com/a'
+
+url=$(printf "%s\n" "$line" | awk -F'|' '{ print $NF }')
+name=$(printf "%s\n" "$line" | sed "s#|$url\$##")
+name=$(printf "%s\n" "$name" | sed 's/|//g')
+name=$(printf "%s\n" "$name" | sed 's/^"*//; s/"*$//')
+printf "| %s | %s |\n" "$name" "$url" &gt;&gt; unique_bookmarks.md</pre>
+        <p>قدم‌ها: آخر خط را به‌عنوان url بردار، همان url را از ته خط بکن، پایپ‌های باقی‌ماندهٔ داخل اسم را بردار،
+          کوت‌های دور اسم را بردار، یک ردیف مارک‌داون بنویس.</p>
+        <table>
+          <tr>
+            <th>تکه</th>
+            <th>معنی</th>
+          </tr>
+          <tr>
+            <td><code>^</code> / <code>$</code></td>
+            <td>ابتدا / انتهای خط</td>
+          </tr>
+          <tr>
+            <td><code>.</code></td>
+            <td>هر نویسه</td>
+          </tr>
+          <tr>
+            <td><code>*</code></td>
+            <td>صفر یا بیشتر از عبارت قبلی</td>
+          </tr>
+          <tr>
+            <td><code>"*</code></td>
+            <td>صفر یا بیشتر دابل‌کوت</td>
+          </tr>
+          <tr>
+            <td><code>\</code></td>
+            <td>نویسهٔ بعدی معمولی است. <code>\$</code> یعنی خود علامت دلار، نه انتهای خط، وقتی داخل دابل‌کوت بش است
+            </td>
+          </tr>
+          <tr>
+            <td><code>#</code> در sed</td>
+            <td>جداکنندهٔ دستور s، تا لازم نباشد اسلش‌های url را فرار بدهی</td>
+          </tr>
+        </table>
+        <p>همان کار با پارامترهای بش، اگر پایپ فقط یک بار جداکننده باشد:</p>
+        <pre>url="${line##*|}"
+name="${line%|$url}"
+name="${name//|/}"
+name="${name#\"}"
+name="${name%\"}"</pre>
+      </section>
+
+      <section id="curl">
+        <h2>curl</h2>
+        <p>client URL. صفحه، API، هدر، و آپلود را از ترمینال می‌گیرد. <code>wget</code> بیشتر برای دانلود فایل است.</p>
+        <table>
+          <tr>
+            <th>فلگ</th>
+            <th>کار</th>
+          </tr>
+          <tr>
+            <td><code>-s</code> / <code>-S</code></td>
+            <td>ساکت / اگر ساکت است باز هم خطا را نشان بده. معمولاً با هم: <code>-sS</code></td>
+          </tr>
+          <tr>
+            <td><code>-f</code></td>
+            <td>اگر HTTP خطا بود (۴۰۴، ۵۰۰) خود curl هم شکست بخورد</td>
+          </tr>
+          <tr>
+            <td><code>-L</code></td>
+            <td>ریدایرکت را دنبال کن</td>
+          </tr>
+          <tr>
+            <td><code>-o file</code> / <code>-O</code></td>
+            <td>ذخیره با اسم دلخواه / با اسم خود URL</td>
+          </tr>
+          <tr>
+            <td><code>-I</code></td>
+            <td>فقط هدر، درخواست HEAD</td>
+          </tr>
+          <tr>
+            <td><code>-i</code></td>
+            <td>هدر به‌علاوهٔ بدنه</td>
+          </tr>
+          <tr>
+            <td><code>-v</code></td>
+            <td>درخواست و پاسخ، برای دیباگ</td>
+          </tr>
+          <tr>
+            <td><code>-X METHOD</code></td>
+            <td>GET POST PUT DELETE. با <code>-d</code> خودش POST می‌شود</td>
+          </tr>
+          <tr>
+            <td><code>-H "K: V"</code></td>
+            <td>هدر</td>
+          </tr>
+          <tr>
+            <td><code>-d 'a=1'</code></td>
+            <td>بدنه</td>
+          </tr>
+          <tr>
+            <td><code>-u user:pass</code></td>
+            <td>Basic auth</td>
+          </tr>
+          <tr>
+            <td><code>-k</code></td>
+            <td>گواهی TLS را چک نکن. فقط برای تست لوکال</td>
+          </tr>
+          <tr>
+            <td><code>-w '%{http_code}'</code></td>
+            <td>بعد از پاسخ، مثلاً کد وضعیت</td>
+          </tr>
+          <tr>
+            <td><code>-m 10</code></td>
+            <td>مهلت به ثانیه</td>
+          </tr>
+        </table>
+        <pre>curl -fsSL -o page.html https://example.com
+curl -I https://example.com
+curl -sS -H "Accept: application/json" https://api.example.com/items
+curl -sS -X POST -H "Content-Type: application/json" \
+  -d '{"city":"tehran"}' https://api.example.com/weather
+code=$(curl -sS -o /dev/null -w "%{http_code}" https://example.com)
+echo "$code"
+
+python3 -m http.server 8080
+# اگر index.html همین پوشه باشد، همان باز می‌شود</pre>
+      </section>
+
+      <section id="jq">
+        <h2>jq</h2>
+        <p>فیلتر JSON. بدون jq باید با sed روی آکولاد ببُری و می‌شکند.</p>
+        <pre>curl -fsSL https://example.com/data.json | jq .
+jq '.name' data.json
+jq -r '.name' data.json          # -r رشتهٔ خام، بدون کوت اضافه
+jq '.items[0].url' data.json
+jq '.items[].name' data.json
+jq -r '.[] | "\(.name) \(.url)"' data.json
+jq 'map(select(.ok == true))' data.json
+
+name=$(curl -fsSL "$url" | jq -r '.title')
+echo "$name"</pre>
+        <p>اگر مقدار <code>null</code> باشد و <code>-e</code> بگذاری، jq با وضعیت غیر صفر خارج می‌شود و زیر
+          <code>set -e</code> اسکریپت می‌ایستد.
+        </p>
+      </section>
+
+      <section id="eval">
+        <h2>eval</h2>
+        <p><code>eval</code> یک رشته را دوباره به‌عنوان دستور اجرا می‌کند. برای ساختن دستور پویا وسوسه‌کننده است و اگر
+          ذره‌ای از آن رشته از کاربر، فایل، یا اینترنت آمده باشد، همان رشته دستور می‌شود.</p>
+        <pre># بد: هر چه داخل cmd باشد اجرا می‌شود
+cmd="rm -rf /"
+# eval "$cmd"
+
+# شکل امن برای دستورهای خودت: آرایه
+cmd=(ls -la "/tmp/my notes")
+"${cmd[@]}"
+
+# شکل امن برای مقدار
+printf -v greeting "سلام %s" "$name"
+echo "$greeting"</pre>
+        <div class="pitfall"><strong>کی eval قابل دفاع است</strong>
+          فقط روی رشته‌ای که خودت ساخته‌ای و هیچ ورودی خارجی داخلش نیست. حتی آن‌وقت هم آرایهٔ دستور معمولاً همان کار را
+          می‌کند. خروجی <code>declare -p</code> را گاهی با eval برمی‌گردانند، چون خودش سینتکس بش است؛ باز هم منبعش باید
+          مطمئن باشد.
+        </div>
+      </section>
+
+      <footer>
+        جزوهٔ شخصی لینوکس و بش. دستورها را روی ماشین خودت امتحان کن؛ فلگ <code>-i</code> در sed بین گنو و مک فرق دارد.
+      </footer>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+
+</html>
