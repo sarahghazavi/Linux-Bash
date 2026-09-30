@@ -42,14 +42,18 @@
         <a href="#wc">wc</a>
         <a href="#headtail">head و tail</a>
         <a href="#find">find</a>
+        <a href="#grep">grep</a>
         <a href="#sort">sort</a>
+        <a href="#textutils">cut، tr، paste، uniq، xargs</a>
         <a href="#sed">sed</a>
         <a href="#awk">awk</a>
         <a href="#regex">رجکس عملی</a>
+        <a href="#wrangling">پردازش داده با پایپ</a>
         <a href="#curl">curl</a>
         <a href="#jq">jq</a>
         <a href="#eval">eval</a>
         <a href="#video">فیلم انگلیسی Bash</a>
+        <a href="#video2">فیلم Data Wrangling</a>
       </nav>
     </aside>
     <main>
@@ -1344,6 +1348,81 @@ find . -type f -name "*.sh" -exec shellcheck {} \;</pre>
         </div>
       </section>
 
+      <section id="grep">
+        <h2>grep</h2>
+        <p>خط‌هایی را که با الگو می‌خوانند جدا می‌کند. الگو به‌طور پیش‌فرض BRE است؛ با <code>-E</code> می‌شود ERE، با
+          <code>-F</code> متن ثابت، و روی گنو با <code>-P</code> رجکس perl. تفاوت BRE و ERE در بخش <a href="#regex">رجکس</a> آمده است.</p>
+        <table>
+          <tr>
+            <th>فلگ</th>
+            <th>کار</th>
+          </tr>
+          <tr>
+            <td><code>-E</code></td>
+            <td>الگوی گسترده: <code>+ ? | ( ) { }</code> بدون بک‌اسلش معنی ویژه دارند</td>
+          </tr>
+          <tr>
+            <td><code>-F</code></td>
+            <td>متن ثابت، نه رجکس. نقطه و ستاره معمولی‌اند</td>
+          </tr>
+          <tr>
+            <td><code>-i</code> / <code>-v</code></td>
+            <td>بدون حساسیت به حروف / برعکس: خط‌هایی که نمی‌خوانند</td>
+          </tr>
+          <tr>
+            <td><code>-o</code></td>
+            <td>فقط بخش منطبق، هر تطابق در یک خط</td>
+          </tr>
+          <tr>
+            <td><code>-c</code></td>
+            <td>تعداد خط‌های منطبق (نه تعداد تطابق‌ها)</td>
+          </tr>
+          <tr>
+            <td><code>-n</code></td>
+            <td>شمارهٔ خط</td>
+          </tr>
+          <tr>
+            <td><code>-w</code> / <code>-x</code></td>
+            <td>فقط کلمهٔ کامل / کل خط باید منطبق شود</td>
+          </tr>
+          <tr>
+            <td><code>-q</code></td>
+            <td>چیزی چاپ نمی‌کند، فقط کد خروج می‌دهد؛ برای <code>if</code></td>
+          </tr>
+          <tr>
+            <td><code>-r</code> / <code>-l</code></td>
+            <td>بازگشتی در پوشه / فقط اسم فایل‌هایی که دارند</td>
+          </tr>
+          <tr>
+            <td><code>-A n</code> / <code>-B n</code> / <code>-C n</code></td>
+            <td>n خط بعد / قبل / دو طرف هر تطابق</td>
+          </tr>
+          <tr>
+            <td><code>-e pat</code></td>
+            <td>چند الگو: <code>grep -e a -e b</code></td>
+          </tr>
+          <tr>
+            <td><code>-P</code></td>
+            <td>رجکس perl، مثل <code>.*?</code> (غیرحریص) و <code>\d</code>. فقط گنو؛ روی مک نیست</td>
+          </tr>
+        </table>
+        <pre>grep -Ei 'error|warn' app.log                          # هر دو، بدون حساسیت به حروف
+grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' access.log   # فقط IPها
+grep -A2 'ERROR' app.log                               # خط خطا و دو خط بعدش
+grep -v '^#' conf | grep -v '^$'                       # بدون کامنت و خط خالی
+grep -w cat f                                          # cat، ولی نه concat
+grep -F 'a.b' f                                        # نقطه معمولی است
+grep -q root /etc/passwd &amp;&amp; echo yes                   # فقط کد خروج</pre>
+        <div class="pitfall"><strong>-c خط می‌شمارد، نه تطابق</strong>
+          اگر فایل سه خط <code>aaa</code>، <code>ab</code>، <code>b</code> باشد، <code>grep -c a</code> عدد ۲ می‌دهد (دو خط) و
+          <code>grep -o a | wc -l</code> عدد ۴ (چهار a).
+        </div>
+        <div class="pitfall"><strong>نبودن تطابق یعنی کد خروج ۱</strong>
+          زیر <code>set -eo pipefail</code>، خط <code>... | grep x | wc -l</code> وقتی x پیدا نشود اسکریپت را می‌کشد. اگر «پیدا نشد»
+          خطا نیست، بنویس <code>{ grep x f || true; }</code>.
+        </div>
+      </section>
+
       <section id="sort">
         <h2>sort</h2>
         <pre>sort names.txt
@@ -1359,6 +1438,73 @@ sort -o out.txt in.txt       # خروجی در فایل
 sort file | uniq
 sort file | uniq -c          # با تعداد
 sort file | uniq -d          # فقط آن‌هایی که تکرار شده‌اند</pre>
+        <div class="note"><strong>چند نکته دربارهٔ sort</strong>
+          <ul>
+            <li><code>-k1,1</code> یعنی «فقط ستون اول» و <code>-k1</code> یعنی «از ستون اول تا آخر خط». عدد بعد از ویرگول ستون پایان است.
+              <code>-nk1,1</code> یعنی عددی، روی ستون اول.</li>
+            <li>وقتی کلید دو خط برابر باشد، sort برای تعیین ترتیب کل خط را مقایسه می‌کند. با <code>-s</code> ترتیب اصلی حفظ می‌شود.</li>
+            <li>ترتیب حروف به زبان سیستم بستگی دارد: در <code>en_US.UTF-8</code> می‌شود <code>a A b B</code> و با <code>LC_ALL=C</code>
+              می‌شود <code>A B a b</code>. وقتی خروجی باید روی هر ماشینی یکسان باشد، مثلاً قبل از <code>sha256sum</code>، بنویس
+              <code>LC_ALL=C sort</code>.</li>
+            <li>پرتکرارترین‌ها: <code>sort | uniq -c | sort -nr | head -n 3</code>.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="textutils">
+        <h2>cut، tr، paste، uniq، xargs</h2>
+        <h3>cut</h3>
+        <p>ستون یا بازهٔ نویسه را از هر خط می‌برد.</p>
+        <pre>cut -d: -f1,3 /etc/passwd       # ستون ۱ و ۳، با جداکنندهٔ :
+cut -d, -f2- data.csv            # از ستون ۲ تا آخر
+cut -c1-5 file                   # نویسهٔ ۱ تا ۵ هر خط</pre>
+        <p>جداکننده فقط یک نویسه است. با دو فاصلهٔ پشت‌سرهم، <code>a  b</code> سه ستون می‌شود (وسطی خالی). <code>cut</code> ترتیب ستون‌ها
+          را هم عوض نمی‌کند: <code>-f3,1</code> همان <code>-f1,3</code> است. برای این دو کار از awk یا <code>read</code> استفاده کن.</p>
+        <h3>tr</h3>
+        <p>نویسه‌ها را جایگزین یا حذف می‌کند. فقط از stdin می‌خواند و اسم فایل نمی‌گیرد.</p>
+        <pre>tr a-z A-Z &lt; f                    # حروف بزرگ
+tr '[:upper:]' '[:lower:]' &lt; f      # حروف کوچک
+tr -d '\r' &lt; win.txt &gt; unix.txt      # حذف CR از فایل ویندوزی
+tr -s ' ' &lt; f                      # فاصله‌های پشت‌سرهم → یکی
+tr -cd '0-9\n' &lt; f                 # فقط رقم و خط جدید بماند
+tr ',;|' '\n' &lt; f                  # هر سه جداکننده → خط جدید
+tr -s ',;|' '\n' &lt; f               # همان، ولی برای جداکننده‌های پشت‌سرهم خط خالی نمی‌سازد
+tr '\n' ' ' &lt; f                    # کل فایل → یک خط</pre>
+        <div class="pitfall"><strong>tr رشته نمی‌شناسد، نویسه می‌شناسد</strong>
+          <code>tr 'foo' 'bar'</code> نویسه‌ها را یکی‌یکی جایگزین می‌کند: f به b، o به a، و بعد o به r. نتیجه از <code>foo</code>،
+          <code>brr</code> می‌شود، نه <code>bar</code>. برای جایگزینی رشته از sed استفاده کن.
+        </div>
+        <h3>paste</h3>
+        <pre>paste -sd, f              # همهٔ خط‌ها در یک خط، با کاما: 1,2,3
+paste -sd+ f | bc -l      # جمع عددهای فایل
+paste a.txt b.txt         # دو فایل کنار هم، با تب
+paste -d: a.txt b.txt     # با جداکنندهٔ :</pre>
+        <p><code>bc</code> همیشه نصب نیست (<code>sudo apt install bc</code>). روی مک، <code>paste</code> از نوع BSD است و معمولاً به‌جای
+          <code>paste -sd, f</code> باید <code>paste -sd, - &lt; f</code> بنویسی.</p>
+        <h3>uniq</h3>
+        <pre>sort f | uniq             # هر خط یک بار
+sort f | uniq -c          # با تعداد
+sort f | uniq -d          # فقط آن‌هایی که بیش از یک بار آمده‌اند
+sort f | uniq -u          # فقط آن‌هایی که دقیقاً یک بار آمده‌اند
+sort f | uniq -c | sort -nr | head -n 3    # سه‌تای پرتکرار</pre>
+        <div class="pitfall"><strong>uniq فقط خط‌های پشت‌سرهم را یکی می‌کند</strong>
+          بدون <code>sort</code> قبلش، <code>b a b</code> همان <code>b a b</code> می‌ماند. اگر ترتیب اصلی مهم است،
+          <code>awk '!seen[$0]++' f</code> هر خط را فقط بار اول نگه می‌دارد.
+        </div>
+        <h3>xargs</h3>
+        <p>ورودی را از روی فاصله و خط جدید می‌شکند و به‌عنوان آرگومان به یک دستور می‌دهد. الگوی کلی: فهرست را با پایپ بساز، فیلتر کن و
+          بده به xargs؛ مثلاً حذف همهٔ نسخه‌های قدیمی یک برنامه با استخراج اسم‌هایشان.</p>
+        <pre>find . -name '*.tmp' -print0 | xargs -0 rm         # امن، حتی با فاصله در اسم
+xargs -n1 curl -sO &lt; urls.txt                      # هر بار یک آرگومان
+printf '1\n2\n3\n' | xargs -n2 echo                # دوتا دوتا: «1 2» و «3»
+printf 'x\ny\n' | xargs -I{} echo dir_{}           # {} جای هر ورودی
+find . -name '*.log' -print0 | xargs -0 -P4 gzip   # چهار پردازش هم‌زمان
+printf '' | xargs -r echo hi                       # ورودی خالی: اجرا نکن (گنو)</pre>
+        <div class="pitfall"><strong>اسم با فاصله و ورودی خالی</strong>
+          بدون <code>-print0</code> و <code>-0</code>، اسم <code>a b.tmp</code> به دو آرگومان می‌شکند و <code>rm</code> خطا می‌دهد. بدون
+          <code>-r</code>، <code>xargs</code> روی ورودی خالی هم یک بار دستور را اجرا می‌کند: <code>printf '' | xargs echo hi</code> چاپ
+          می‌کند <code>hi</code>.
+        </div>
       </section>
 
       <section id="sed">
@@ -1389,6 +1535,14 @@ name=$(printf "%s" "$name" | sed "s#|$url\$##")</pre>
           <code>-i</code> بچسبد؛ این شکل روی گنو و مک هر دو کار می‌کند. اگر متغیر شل را داخل الگو می‌گذاری از دابل‌کوت استفاده کن:
           <code>sed "s/$old/$new/g" file</code>. ولی اگر مقدار متغیر <code>/</code> یا <code>&amp;</code> داشته باشد، دستور خراب می‌شود.
         </div>
+        <h3>sed -E، گروه‌ها و چند دستور دیگر</h3>
+        <pre>sed -E 's/(a+)(b+)/\2\1/' file      # با -E، گروه و + بدون بک‌اسلش؛ \1 و \2 گروه‌ها
+sed 's/l\+/[&amp;]/' file                # &amp; = کل بخش منطبق
+sed -e 's/a/b/' -e 's/c/d/' file      # چند دستور (یا با ; بین‌شان)
+sed 'y/abc/xyz/' file                 # y: جایگزینی نویسه‌به‌نویسه، شبیه tr
+sed '0,/START/d' file                 # از اول تا اولین خطِ START را حذف کن (گنو)</pre>
+        <p>پرانتز، گروه و <code>\1</code> در بخش <a href="#regex">رجکس</a> توضیح داده شده‌اند. اگر فقط بخشی از خط را می‌خواهی، الگو را
+          روی کل خط بنویس، آن بخش را داخل پرانتز بگذار و کل خط را با <code>\1</code> عوض کن.</p>
       </section>
 
       <section id="awk">
@@ -1411,6 +1565,21 @@ tr '\n' ' ' &lt; file | awk -v n="$n" '{ print $n }'    # کلمهٔ n‌ام ک
 hostname -I | awk '{ print $1 }'                    # اولین آدرس IP</pre>
         <p>شل داخل تک‌کوتِ awk چیزی باز نمی‌کند، پس مقدار را با <code>-v</code> به awk می‌دهی. awk هر خط را یک ردیف می‌بیند؛ برای
           «کلمهٔ n‌ام فایل» اول با <code>tr</code> خط‌ها را به فاصله تبدیل می‌کنیم تا کل فایل یک خط شود.</p>
+        <h3>الگو، BEGIN و END، و آرایه</h3>
+        <p>برنامهٔ awk از تکه‌های «الگو + بلوک» ساخته می‌شود. اگر الگو برای یک خط درست باشد، بلوک برای همان خط اجرا می‌شود. الگوی خالی یعنی
+          همهٔ خط‌ها و بلوک خالی یعنی «خط را چاپ کن». <code>BEGIN</code> قبل از اولین خط و <code>END</code> بعد از آخرین خط اجرا می‌شود.
+          <code>$0</code> کل خط است. <code>~</code> یعنی «با رجکس می‌خواند» و <code>!~</code> برعکسش.</p>
+        <pre>awk '$1 == 1 &amp;&amp; $2 ~ /^s/ { print $2 }' f       # ستون ۱ برابر ۱ و ستون ۲ با s شروع شود
+awk '$3 &gt;= 50 || $4 == "IN"' f                     # بدون بلوک: خط را چاپ می‌کند
+awk '{ n++ } END { print n+0 }' f                   # تعداد خط؛ n+0 تا خروجی خالی نشود
+awk '{ s += $1 } END { print s }' f                 # جمع ستون اول
+awk 'NR == 1 || $1 &lt; min { min = $1 } NR == 1 || $1 &gt; max { max = $1 } END { print min, max }' f
+awk '{ c[$0]++ } END { for (k in c) print c[k], k }' f | sort -nr    # مثل sort | uniq -c
+awk '!seen[$0]++' f                                 # هر خط فقط بار اول (ترتیب حفظ می‌شود)</pre>
+        <div class="pitfall"><strong>ترتیب for (k in c) مشخص نیست</strong>
+          awk کلیدهای آرایه را به ترتیب دلخواه برمی‌گرداند. اگر ترتیب مهم است، خروجی را به <code>sort</code> بده. همچنین اگر هیچ خطی با
+          الگو نخواند، <code>print n</code> خط خالی چاپ می‌کند و <code>print n+0</code> عدد ۰ را.
+        </div>
       </section>
 
       <section id="regex">
@@ -1463,6 +1632,144 @@ name="${line%|$url}"
 name="${name//|/}"
 name="${name#\"}"
 name="${name%\"}"</pre>
+        <h3>BRE در برابر ERE</h3>
+        <p>grep و sed به‌طور پیش‌فرض BRE دارند که در آن <code>+ ? | ( ) { }</code> نویسهٔ معمولی‌اند. با <code>-E</code> همه ERE می‌شوند و
+          معنی ویژه می‌گیرند. awk هم ERE است. قاعده: همیشه <code>-E</code> بنویس.</p>
+        <table>
+          <tr>
+            <th>معنی</th>
+            <th>BRE</th>
+            <th>ERE (<code>-E</code>)</th>
+          </tr>
+          <tr>
+            <td>یک یا بیشتر</td>
+            <td><code>\+</code></td>
+            <td><code>+</code></td>
+          </tr>
+          <tr>
+            <td>صفر یا یک</td>
+            <td><code>\?</code></td>
+            <td><code>?</code></td>
+          </tr>
+          <tr>
+            <td>یا</td>
+            <td><code>\|</code></td>
+            <td><code>|</code></td>
+          </tr>
+          <tr>
+            <td>گروه</td>
+            <td><code>\( \)</code></td>
+            <td><code>( )</code></td>
+          </tr>
+          <tr>
+            <td>تعداد</td>
+            <td><code>\{2,3\}</code></td>
+            <td><code>{2,3}</code></td>
+          </tr>
+        </table>
+        <p>در BRE گنو، <code>\+</code> و <code>\?</code> و <code>\|</code> کار می‌کنند، ولی در POSIX خالص نه. تکه‌های دیگری که بسیار به کار
+          می‌آیند:</p>
+        <table>
+          <tr>
+            <th>تکه</th>
+            <th>معنی</th>
+          </tr>
+          <tr>
+            <td><code>[abc]</code> / <code>[^abc]</code></td>
+            <td>یکی از این‌ها / هر نویسه‌ای جز این‌ها</td>
+          </tr>
+          <tr>
+            <td><code>[a-z]</code></td>
+            <td>بازه</td>
+          </tr>
+          <tr>
+            <td><code>[[:digit:]]</code>، <code>[[:space:]]</code>، <code>[[:upper:]]</code></td>
+            <td>دستهٔ نویسه‌ها. کروشه دوتایی است، چون خود دسته داخل یک کروشه می‌آید</td>
+          </tr>
+          <tr>
+            <td><code>[^ ]+</code></td>
+            <td>یک «کلمه»: دست‌کم یک نویسهٔ غیر فاصله</td>
+          </tr>
+          <tr>
+            <td><code>\.</code></td>
+            <td>خود نقطه، نه «هر نویسه»</td>
+          </tr>
+        </table>
+        <h3>حریص بودن</h3>
+        <p><code>*</code> و <code>+</code> تا جای ممکن می‌خورند. sed و grep حالت غیرحریص ندارند؛ به‌جایش از کلاس منفی استفاده کن یا perl را به
+          کار ببر.</p>
+        <pre>echo 'k=v=w' | sed 's/.*=//'                # w      تا آخرین = را می‌خورد
+echo 'k=v=w' | sed 's/^[^=]*=//'            # v=w    تا اولین =
+echo 'k=v=w' | perl -pe 's/.*?=//'          # v=w    ? غیرحریص است (فقط perl و grep -P)</pre>
+        <h3>گروه‌ها: \1 و &amp;</h3>
+        <p>هر چیزی که داخل پرانتز بیاید یک گروه شماره‌دار است و در جایگزینی با <code>\1</code>، <code>\2</code> و ... برمی‌گردد.
+          <code>&amp;</code> کل بخش منطبق است. داخل خود الگو هم می‌شود به گروه برگشت: <code>(ab)\1</code> یعنی «ab، دو بار پشت‌سرهم».</p>
+        <pre>echo 'sara:1001:/home/sara' | sed -E 's/^([^:]+):([0-9]+):.*/\2 \1/'    # 1001 sara
+echo 'hello' | sed 's/l\+/[&amp;]/'                                        # he[ll]o
+echo 'abab' | grep -E '(ab)\1'                                          # abab</pre>
+        <div class="note"><strong>رجکس را کم‌کم بساز</strong>
+          اول الگوی کوتاه را با <code>grep -o</code> یا <code>sed -n 's/…/…/p'</code> روی چند خط امتحان کن و بعد کامل‌ترش کن. برای دیدن
+          اینکه هر تکه چه چیزی را می‌گیرد، یک رجکس‌دیباگر مثل <a href="https://regex101.com/">regex101</a> کمک می‌کند.
+        </div>
+      </section>
+
+      <section id="wrangling">
+        <h2>پردازش داده با پایپ</h2>
+        <p>هر <code>|</code> یک مرحلهٔ تبدیل است و پردازش داده یعنی همین: قالب خام را مرحله‌به‌مرحله به چیزی برسانی که می‌خواهی. مهارت اصلی،
+          شناختن ابزارها و چیدنشان پشت هم است. لاگ مثال خوبی است، چون بزرگ است و نمی‌شود همه‌اش را خواند. این مثال لاگ ورود ssh است. فایل
+          <code>auth.log</code> ده خط دارد و چند خطش این‌هاست:</p>
+        <pre>Sep 30 10:01:02 srv sshd[101]: Disconnected from invalid user admin 10.0.0.5 port 4021 [preauth]
+Sep 30 10:02:11 srv sshd[103]: Disconnected from user sara 192.168.1.20 port 50522
+Sep 30 10:02:30 srv sshd[104]: Accepted publickey for sara from 192.168.1.20 port 50523 ssh2
+Sep 30 10:04:00 srv sshd[106]: Disconnected from invalid user test user 10.0.0.9 port 61000 [preauth]</pre>
+        <h3>مرحلهٔ ۱: فیلتر</h3>
+        <pre>grep 'Disconnected from' auth.log | wc -l      # 8   خط‌های ورود ناموفق یا قطع‌شده</pre>
+        <h3>مرحلهٔ ۲: فقط اسم کاربر</h3>
+        <pre>rx='s/.*from (invalid |authenticating )?user (.*) [0-9.]+ port [0-9]+( \[preauth\])?$/\2/'
+names() { grep 'Disconnected from' auth.log | sed -E "$rx"; }
+names | paste -sd,     # admin,root,sara,admin,test user,root,admin,sam</pre>
+        <p>الگو را تکه‌تکه بخوان. <code>.*from </code> تا «from » را می‌خورد. <code>(invalid |authenticating )?</code> پیشوند اختیاری
+          است. <code>user </code> ثابت است. <code>(.*)</code> گروه ۲ است و اسم کاربر. <code> [0-9.]+ port [0-9]+</code> آدرس IP و پورت
+          است. <code>( \[preauth\])?$</code> پسوند اختیاری تا ته خط است. جایگزین <code>\2</code> یعنی «کل خط را با گروه ۲ عوض کن».</p>
+        <div class="note"><strong>چرا کل خط را تطبیق می‌دهیم</strong>
+          اگر فقط <code>.*from </code> را حذف می‌کردیم، پسوند سر جایش می‌ماند و اسم کاربر هم ممکن بود خودش «from» داشته باشد. وقتی ته خط
+          را با IP و پورت قفل می‌کنیم، اسم‌هایی مثل <code>test user</code> یا حتی <code>a from b</code> هم درست درمی‌آیند، چون <code>.*</code>
+          فقط همان بخشِ میان <code>user </code> و IP را می‌گیرد.
+        </div>
+        <h3>مرحلهٔ ۳: شمارش و رتبه‌بندی</h3>
+        <pre>names | sort | uniq -c | sort -nr | head -n 3
+#       3 admin
+#       2 root
+#       1 test user
+
+names | sort | uniq -c | sort -nk1,1 | tail -n 3    # همان سه تا، ولی از کم به زیاد</pre>
+        <p><code>uniq -c</code> فقط خط‌های پشت‌سرهم را می‌شمرد، برای همین <code>sort</code> قبلش لازم است. برای کم‌تکرارها به‌جای
+          <code>tail</code> از <code>head</code> استفاده کن. وقتی شمارش‌ها برابر باشند، ترتیب با مقایسهٔ کل خط تعیین می‌شود.</p>
+        <div class="pitfall"><strong>عدد uniq -c و اسم‌های دوکلمه‌ای</strong>
+          <code>uniq -c</code> عدد را با فاصله‌های اول خط می‌آورد و awk ستون‌ها را با فاصله می‌شکند، پس اسم <code>test user</code> با
+          <code>$2</code> نصف می‌شود.
+          <pre>names | sort | uniq -c | awk '{ print $2 }'          # test      غلط
+names | sort | uniq -c | sed -E 's/^ *[0-9]+ //'     # test user  درست</pre>
+        </div>
+        <h3>مرحلهٔ ۴: قالب خروجی</h3>
+        <pre>names | sort -u | paste -sd,                          # admin,root,sam,sara,test user
+names | sort | uniq -c \
+  | awk '$1 == 1 &amp;&amp; $2 ~ /^s/ { n++ } END { print n+0 }'    # 2   اسم‌های یک‌بارمصرفی که با s شروع می‌شوند</pre>
+        <h3>مرحلهٔ ۵: حساب و کتاب</h3>
+        <pre>names | sort | uniq -c | awk '{ print $1 }' | paste -sd+    # 3+2+1+1+1
+names | sort | uniq -c | awk '{ print $1 }' | paste -sd+ | bc -l    # 8   (bc باید نصب باشد)
+names | sort | uniq -c | awk '{ s += $1 } END { print s }'          # 8   همان، بدون bc</pre>
+        <p>آمار پیشرفته‌تر را R (با <code>summary</code>) یا ابزار st می‌دهد و نمودار ساده را gnuplot. در مسابقه معمولاً awk و sort کافی‌اند.</p>
+        <h3>روش کار</h3>
+        <ul>
+          <li>پایپ را یک مرحله یک مرحله بساز و بعد از هر مرحله خروجی را با <code>| head</code> ببین.</li>
+          <li>اگر داده روی سرور است، فیلتر را همان‌جا اجرا کن و فقط نتیجه را بیاور. کوتِ دور کل پایپ باعث می‌شود پایپ روی سرور اجرا شود، نه
+            روی ماشین خودت. نتیجه را هم در فایل بریز تا موقع ساختن دستور هر بار شبکه نخواهی:
+            <pre>ssh myserver 'journalctl | grep sshd | grep "Disconnected from"' &gt; ssh.log
+less ssh.log</pre>
+          </li>
+          <li>پایپ برای داده‌ی باینری هم جواب می‌دهد: <code>tar cz dir | ssh host 'tar xz'</code>.</li>
+        </ul>
       </section>
 
       <section id="curl">
@@ -1671,6 +1978,108 @@ echo "$greeting"</pre>
             <li><code>$?</code> باید بلافاصله بعد از تابع خوانده شود. اگر یک <code>echo</code> وسط بیفتد، مقدارش عوض می‌شود.</li>
           </ul>
         </div>
+      </section>
+
+      <section id="video2">
+        <h2>فیلم Missing Semester Data Wrangling</h2>
+        <p>درس <a href="https://missing.csail.mit.edu/2020/data-wrangling/">Data Wrangling</a> از دورهٔ Missing Semester دانشگاه MIT است و
+          فیلم و متن درس در همان صفحه‌اند. این بخش هر قسمت درس را کنار جای آن در جزوه می‌گذارد.</p>
+        <table>
+          <tr>
+            <th>قسمت درس</th>
+            <th>نکتهٔ اصلی</th>
+            <th>در جزوه</th>
+          </tr>
+          <tr>
+            <td>مقدمه</td>
+            <td>هر پایپ یک تبدیل داده است، مثل <code>journalctl | grep -i intel</code>. کار اصلی شناختن ابزارها و ترکیب‌شان است</td>
+            <td><a href="#wrangling">پردازش داده با پایپ</a></td>
+          </tr>
+          <tr>
+            <td>لاگ روی سرور</td>
+            <td>فیلتر را روی سرور اجرا کن، نتیجه را در فایل بریز و با <code>less</code> بخوان</td>
+            <td><a href="#wrangling">پردازش داده با پایپ</a></td>
+          </tr>
+          <tr>
+            <td>دستور s در sed</td>
+            <td><code>s/REGEX/جایگزین/</code>؛ همین سینتکس در vim هم هست</td>
+            <td><a href="#sed">sed</a></td>
+          </tr>
+          <tr>
+            <td>رجکس</td>
+            <td><code>.</code> <code>*</code> <code>+</code> <code>[abc]</code> <code>(a|b)</code> <code>^</code> <code>$</code>؛ در sed یا قبلشان
+              <code>\</code> می‌گذاری یا <code>-E</code> می‌زنی</td>
+            <td><a href="#regex">رجکس: BRE در برابر ERE</a></td>
+          </tr>
+          <tr>
+            <td>حریص بودن</td>
+            <td><code>*</code> و <code>+</code> حریص‌اند. sed غیرحریص ندارد و perl دارد</td>
+            <td><a href="#regex">رجکس: حریص بودن</a></td>
+          </tr>
+          <tr>
+            <td>تطبیق کل خط و گروه‌ها</td>
+            <td>کل خط را تطبیق بده تا اسم‌های عجیب هم خراب نکنند. گروه‌ها با <code>\1</code> و <code>\2</code> برمی‌گردند</td>
+            <td><a href="#regex">رجکس: گروه‌ها</a>، <a href="#wrangling">پردازش داده با پایپ</a></td>
+          </tr>
+          <tr>
+            <td>شمارش</td>
+            <td><code>sort | uniq -c | sort -nk1,1 | tail -n10</code>؛ برای کم‌تکرارها <code>head</code>؛ و <code>sort -r</code></td>
+            <td><a href="#sort">sort</a>، <a href="#textutils">uniq</a></td>
+          </tr>
+          <tr>
+            <td>لیست با کاما</td>
+            <td><code>awk '{print $2}' | paste -sd,</code></td>
+            <td><a href="#textutils">paste</a></td>
+          </tr>
+          <tr>
+            <td>awk</td>
+            <td>الگو + بلوک، <code>$0</code> و <code>$1</code> تا <code>$n</code>، <code>-F</code>، <code>BEGIN</code> و <code>END</code></td>
+            <td><a href="#awk">awk</a></td>
+          </tr>
+          <tr>
+            <td>bc</td>
+            <td><code>paste -sd+ | bc -l</code> عددهای هر خط را جمع می‌زند</td>
+            <td><a href="#wrangling">پردازش داده با پایپ</a></td>
+          </tr>
+          <tr>
+            <td>R، st و gnuplot</td>
+            <td>آمار و نمودار؛ برای مسابقه لازم نیست</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>xargs</td>
+            <td>فهرست را فیلتر کن و بده به <code>xargs</code> تا برای هر اسم دستور اجرا شود</td>
+            <td><a href="#textutils">xargs</a></td>
+          </tr>
+          <tr>
+            <td>داده‌ی باینری</td>
+            <td>پایپ فقط برای متن نیست</td>
+            <td><a href="#wrangling">پردازش داده با پایپ</a></td>
+          </tr>
+        </table>
+        <h3>تمرین‌های درس و راهنمایی</h3>
+        <ol>
+          <li>تمرین رجکس تعاملی در <a href="https://regexone.com/">regexone</a> را کامل کن.</li>
+          <li>کلمه‌های فایل <code>/usr/share/dict/words</code> که دست‌کم سه <code>a</code> دارند و به <code>'s</code> ختم نمی‌شوند. حروف را با
+            <code>tr '[:upper:]' '[:lower:]'</code> یکدست کن. «دست‌کم سه a» می‌شود <code>grep -E '^([^a]*a){3}'</code> و حذف
+            <code>'s</code> می‌شود <code>grep -v "'s$"</code>. دو حرف آخر را با <code>sed -E 's/.*(..)$/\1/'</code> بگیر و با
+            <code>sort | uniq -c | sort -nr | head -n 3</code> سه‌تای پرتکرار را ببین. تعداد ترکیب‌ها را <code>sort -u | wc -l</code> می‌دهد.
+            برای چالش، همهٔ ۶۷۶ ترکیب را با <code>printf '%s\n' {a..z}{a..z}</code> بساز و با <code>comm -23</code> با ترکیب‌های دیده‌شده
+            مقایسه کن. اگر فایل کلمات نبود: <code>sudo apt install wamerican</code>.</li>
+          <li>چرا <code>sed s/REGEX/SUB/ input.txt &gt; input.txt</code> بد است؟ شل قبل از اجرای sed، فایل <code>input.txt</code> را برای
+            redirect خالی می‌کند و sed فایل خالی را می‌خواند. این مشکل مخصوص sed نیست و با هر دستوری پیش می‌آید، مثل
+            <code>sort f &gt; f</code>. راه درست: <code>sed -i</code>، یا نوشتن در فایل موقت و <code>mv</code>.</li>
+          <li>میانگین، میانه و بیشینهٔ زمان بوت ده بوت اخیر: بوت‌ها را با <code>journalctl --list-boots</code> ببین و لاگ هر کدام را با
+            <code>journalctl -b 0</code>، <code>-b -1</code>، <code>-b -2</code> و همین‌طور ادامه بگیر (۰ بوت فعلی است و <code>-1</code> بوت قبلی). زمان‌ها را از خط <code>Startup finished in</code> دربیاور، به ثانیه تبدیل کن، و با
+            <code>sort -n</code> و awk آمار بگیر. اگر روی WSL سیستم systemd روشن نیست، <code>journalctl</code> کار نمی‌کند؛ روی یک
+            ماشین مجازی یا سرور امتحان کن.</li>
+          <li>پیام‌های بوتی که بین سه ریبوت اخیر مشترک نیستند. مراحل: لاگ سه بوت اخیر را بگیر. بخش‌های متغیر هر خط، مثل زمان، را با sed
+            بردار. <code>sort | uniq -c</code> بزن. خط‌هایی که شمارششان ۳ است را حذف کن: <code>awk '$1 != 3'</code>.</li>
+          <li>یک مجموعه‌داده را با <code>curl -fsSL</code> بگیر و دو ستون عددی‌اش را جدا کن. HTML را با
+            <a href="https://github.com/EricChiang/pup">pup</a> و JSON را با <code>jq</code> پردازش کن. کمینه و بیشینه در یک دستور:
+            <code>awk 'NR == 1 || $1 &lt; min { min = $1 } NR == 1 || $1 &gt; max { max = $1 } END { print min, max }'</code>. تفاضل جمع
+            دو ستون: <code>awk '{ a += $1; b += $2 } END { print a - b }'</code>.</li>
+        </ol>
       </section>
 
       <footer>
