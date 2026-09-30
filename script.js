@@ -2,7 +2,8 @@ function isolateLatin(root) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const nodes = [];
   while (walker.nextNode()) nodes.push(walker.currentNode);
-  const re = /[A-Za-z0-9_$.{}[\]:/+#<>=|"'\\-]+/g;
+  const word = String.raw`[A-Za-z0-9_$.{}[\]:/+#<>=|"'\\-]+`;
+  const re = new RegExp(`${word}(?: ${word})*`, "g");
   for (const node of nodes) {
     if (node.parentElement?.closest("pre, code, script, style")) continue;
     const text = node.nodeValue;

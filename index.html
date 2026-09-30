@@ -30,10 +30,15 @@
         <a href="#shortcuts">میانبر و alias</a>
         <a href="#script">شروع اسکریپت</a>
         <a href="#vars">متغیرها</a>
+        <a href="#quoting">کوت و شکستن کلمه</a>
+        <a href="#redirect">خروجی، خطا و redirect</a>
         <a href="#strings">رشته‌ها</a>
         <a href="#arrays">آرایه‌ها</a>
         <a href="#tests">شرط و مقایسه</a>
+        <a href="#exitcodes">کد خروج و $?</a>
         <a href="#loops">حلقه‌ها و seq</a>
+        <a href="#readfile">خواندن فایل در اسکریپت</a>
+        <a href="#functions">تابع و local</a>
         <a href="#wc">wc</a>
         <a href="#headtail">head و tail</a>
         <a href="#find">find</a>
@@ -44,6 +49,7 @@
         <a href="#curl">curl</a>
         <a href="#jq">jq</a>
         <a href="#eval">eval</a>
+        <a href="#video">فیلم انگلیسی Bash</a>
       </nav>
     </aside>
     <main>
@@ -491,6 +497,44 @@ chmod +x script.sh
 ./script.sh</pre>
         <p><code>exit 0</code> یعنی موفق. هر عدد غیر صفر یعنی شکست. <code>exit 1</code> قرارداد معمول خطای عمومی است.
         </p>
+        <h3>چهار روش اجرا</h3>
+        <table>
+          <tr>
+            <th>دستور</th>
+            <th>چه می‌شود</th>
+          </tr>
+          <tr>
+            <td><code>./script.sh</code></td>
+            <td>باید <code>chmod +x</code> داشته باشد. خط shebang تعیین می‌کند کدام مفسر اجرایش کند</td>
+          </tr>
+          <tr>
+            <td><code>bash script.sh</code></td>
+            <td>chmod لازم نیست و shebang نادیده گرفته می‌شود. داور سؤال‌های المپیک همین‌طور اجرا می‌کند</td>
+          </tr>
+          <tr>
+            <td><code>sh script.sh</code></td>
+            <td>با sh اجرا می‌شود که روی اوبونتو dash است، نه بش</td>
+          </tr>
+          <tr>
+            <td><code>source script.sh</code> یا <code>. script.sh</code></td>
+            <td>داخل همین شل اجرا می‌شود؛ متغیرها و تابع‌هایش بعد از تمام شدن هم می‌مانند. <code>exit</code> در آن خود ترمینال را می‌بندد</td>
+          </tr>
+        </table>
+        <p>خط اول می‌تواند <code>#!/bin/bash</code> باشد یا <code>#!/usr/bin/env bash</code> که بش را از PATH پیدا می‌کند. مسیر بش را با
+          <code>which bash</code> ببین. اگر خط اول <code>#!/bin/sh</code> باشد فقط POSIX مجاز است: آرایه، <code>[[ ]]</code>،
+          <code>${var,,}</code>، <code>&amp;&gt;</code> و <code>&lt;&lt;&lt;</code> کار نمی‌کنند.</p>
+        <div class="pitfall"><strong>فایل از ویندوز با CRLF آمده</strong>
+          علامت‌ها: <code>bad interpreter: /bin/bash^M</code> یا <code>$'\r': command not found</code>. درمان:
+          <code>sed -i 's/\r$//' script.sh</code> یا <code>dos2unix script.sh</code>. برای جلوگیری، در ویرایشگر پایان خط را LF
+          بگذار و در ریپو فایل <code>.gitattributes</code> با خط <code>* text=auto eol=lf</code> داشته باش.
+        </div>
+        <div class="note"><strong>ابزارهای کمکی</strong>
+          <code>shellcheck script.sh</code> اشتباه کوت و شرط را قبل از اجرا پیدا می‌کند (<code>sudo apt install shellcheck</code>).
+          <code>bash -n script.sh</code> فقط سینتکس را چک می‌کند و چیزی اجرا نمی‌کند. <code>bash -x script.sh</code> هر دستور را با
+          یک <code>+</code> اول خط چاپ می‌کند تا ببینی کجا خراب می‌شود. در WSL پروژه را داخل خانهٔ لینوکس (<code>~</code>) نگه دار،
+          نه <code>/mnt/c</code>؛ آنجا کندتر است و دسترسی فایل‌ها عجیب می‌شود. تله‌های <code>set -e</code> در بخش
+          <a href="#exitcodes">کد خروج</a> آمده است.
+        </div>
       </section>
 
       <section id="vars">
@@ -514,6 +558,10 @@ echo "$REPLY"</pre>
           اگر بعد از پیام اسم متغیر باشد، مقدار آنجاست. <code>-r</code> یعنی بک‌اسلش را معمولی بخوان، نه اینکه ورودی خام
           نباشد.
         </div>
+        <div class="pitfall"><strong>read با دلار نمی‌خواهد</strong>
+          درست: <code>read name</code>. اگر بنویسی <code>read $name</code>، شل اول <code>$name</code> را باز می‌کند. وقتی خالی است، دستور
+          <code>read</code> بی‌اسم اجرا می‌شود، جواب در <code>REPLY</code> می‌رود و <code>name</code> همچنان خالی می‌ماند.
+        </div>
         <h3>آرگومان‌های اسکریپت</h3>
         <pre>./script.sh "DevOps notes" extra
 # $0 = خود اسکریپت
@@ -533,6 +581,12 @@ rest="${@:2}"     # همان، ولی برای پاس دادن دوباره به
         <pre>name="$1"
 shift             # $2 می‌آید جای $1، و بقیه یکی جلو می‌آیند
 echo "باقی: $#"</pre>
+        <p>قبل از کار با <code>$1</code> تعداد آرگومان را چک کن. پیام استفاده روی stderr برود و اسکریپت با کد غیر صفر خارج شود.
+          <code>$0</code> اسم خود اسکریپت است، پس پیام با هر اسمی درست می‌ماند.</p>
+        <pre>if [ "$#" -lt 2 ]; then
+  echo "usage: $0 &lt;src&gt; &lt;dst&gt;" &gt;&amp;2
+  exit 1
+fi</pre>
         <h3>خروجی دستور را بریز داخل متغیر</h3>
         <pre>now=$(date +%F)
 count=$(wc -l &lt; /etc/passwd)
@@ -558,6 +612,164 @@ echo "${port:=8080}"     # اگر خالی بود ست کن و نشان بده
 echo "${port:?لازم است}"  # اگر خالی بود خطا و خروج
 echo "${port:+set}"      # فقط اگر مقدار داشت، کلمهٔ set را نشان بده</pre>
         </div>
+      </section>
+
+      <section id="quoting">
+        <h2>کوت و شکستن کلمه</h2>
+        <p>بش بعد از باز کردن متغیرها، نتیجه را از روی فاصله، تب و خط جدید به کلمه می‌شکند (word splitting) و بعد <code>*</code> و
+          <code>?</code> را به اسم فایل‌ها باز می‌کند (globbing). کوت همین دو کار را کنترل می‌کند.</p>
+        <table>
+          <tr>
+            <th>شکل</th>
+            <th>رفتار</th>
+          </tr>
+          <tr>
+            <td><code>$x</code></td>
+            <td>باز می‌شود، می‌شکند و glob هم می‌شود. خطرناک است</td>
+          </tr>
+          <tr>
+            <td><code>"$x"</code></td>
+            <td>متغیر و <code>$(...)</code> باز می‌شوند ولی نتیجه یک کلمه می‌ماند</td>
+          </tr>
+          <tr>
+            <td><code>'$x'</code></td>
+            <td>هیچ‌چیز باز نمی‌شود؛ متن خام</td>
+          </tr>
+          <tr>
+            <td><code>$'a\tb'</code></td>
+            <td>نویسه‌های ویژه مثل تب و خط جدید را می‌فهمد</td>
+          </tr>
+        </table>
+        <pre>f="my notes.txt"
+touch $f            # دو فایل می‌سازد: my و notes.txt
+touch "$f"          # یک فایل: my notes.txt
+
+x=""
+[ $x = sara ]       # خطا: unary operator expected (می‌شود [ = sara ])
+[ "$x" = sara ]     # درست
+
+set -- "a b" c      # دو آرگومان
+for v in $@; do echo "&lt;$v&gt;"; done      # &lt;a&gt; &lt;b&gt; &lt;c&gt;   غلط
+for v in "$@"; do echo "&lt;$v&gt;"; done    # &lt;a b&gt; &lt;c&gt;   درست</pre>
+        <div class="pitfall"><strong>قاعدهٔ طلایی</strong>
+          هر <code>$var</code> و <code>$(cmd)</code> را دابل‌کوت کن، مگر اینکه عمداً شکستن کلمه بخواهی. برای آرگومان‌ها
+          <code>"$@"</code> بنویس، نه <code>$@</code>. داخل <code>[[ ]]</code> و سمت راست <code>var=$other</code> شکستن
+          کلمه نیست و کوت لازم نیست، ولی کوت کردن ضرری ندارد.
+        </div>
+        <div class="note"><strong>ShellCheck همین را می‌گیرد</strong>
+          هشدار SC2086 یعنی «متغیر بی‌کوت». اگر ShellCheck را نصب کرده‌ای، قبل از تحویل هر اسکریپت یک‌بار اجرایش کن.
+        </div>
+      </section>
+
+      <section id="redirect">
+        <h2>خروجی، خطا و redirect</h2>
+        <p>هر برنامه سه جریان دارد. پیش‌فرض ورودی کیبورد است و هر دو خروجی ترمینال. redirect یعنی عوض کردن مقصد هرکدام.</p>
+        <table>
+          <tr>
+            <th>شماره</th>
+            <th>اسم</th>
+            <th>پیش‌فرض</th>
+            <th>عملگر</th>
+          </tr>
+          <tr>
+            <td>0</td>
+            <td>stdin</td>
+            <td>کیبورد</td>
+            <td><code>&lt;</code></td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>stdout</td>
+            <td>ترمینال</td>
+            <td><code>&gt;</code> یا <code>1&gt;</code></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>stderr</td>
+            <td>ترمینال</td>
+            <td><code>2&gt;</code></td>
+          </tr>
+        </table>
+        <table>
+          <tr>
+            <th>عملگر</th>
+            <th>کار</th>
+          </tr>
+          <tr>
+            <td><code>cmd &gt; f</code></td>
+            <td>stdout را در فایل می‌ریزد. فایل را می‌سازد یا از نو می‌نویسد</td>
+          </tr>
+          <tr>
+            <td><code>cmd &gt;&gt; f</code></td>
+            <td>به ته فایل اضافه می‌کند</td>
+          </tr>
+          <tr>
+            <td><code>cmd 2&gt; f</code> / <code>2&gt;&gt;</code></td>
+            <td>فقط خطا را در فایل می‌ریزد / به ته اضافه می‌کند</td>
+          </tr>
+          <tr>
+            <td><code>cmd &amp;&gt; f</code> / <code>&amp;&gt;&gt;</code></td>
+            <td>stdout و stderr هر دو در فایل. فقط بش؛ در sh از <code>&gt; f 2&gt;&amp;1</code> استفاده کن</td>
+          </tr>
+          <tr>
+            <td><code>cmd 2&gt;&amp;1</code></td>
+            <td>خطا را به همان جایی می‌فرستد که stdout الان اشاره می‌کند</td>
+          </tr>
+          <tr>
+            <td><code>echo msg &gt;&amp;2</code></td>
+            <td>خروجی این دستور را روی stderr می‌فرستد؛ برای پیام خطا در اسکریپت</td>
+          </tr>
+          <tr>
+            <td><code>cmd &lt; f</code></td>
+            <td>ورودی را از فایل می‌دهد، نه از کیبورد</td>
+          </tr>
+          <tr>
+            <td><code>cmd1 | cmd2</code></td>
+            <td>stdout اولی ورودی دومی می‌شود. خطا رد نمی‌شود</td>
+          </tr>
+          <tr>
+            <td><code>cmd | tee f</code></td>
+            <td>هم روی صفحه نشان می‌دهد و هم در فایل می‌ریزد</td>
+          </tr>
+          <tr>
+            <td><code>cmd 2&gt; /dev/null</code></td>
+            <td>خطا را دور می‌ریزد. با <code>&gt; /dev/null 2&gt;&amp;1</code> هر دو را</td>
+          </tr>
+        </table>
+        <pre>echo "hi" &gt; out.txt
+ls nope 2&gt; err.txt                 # فقط خطا
+ls nope . &gt; all.txt 2&gt;&amp;1            # هر دو در all.txt
+ls nope 2&gt;&amp;1 &gt; all.txt            # غلط: خطا هنوز روی ترمینال می‌آید
+echo "فایل نیست" &gt;&amp;2               # پیام خطا روی stderr</pre>
+        <div class="pitfall"><strong>ترتیب redirect مهم است</strong>
+          redirectها از چپ به راست اعمال می‌شوند. <code>2&gt;&amp;1</code> یعنی «خطا را به جایی بفرست که stdout همین الان هست».
+          در <code>&gt; f 2&gt;&amp;1</code> اول stdout به فایل می‌رود و بعد خطا هم همان‌جا. در <code>2&gt;&amp;1 &gt; f</code> خطا به ترمینال بسته
+          می‌شود و بعد stdout عوض می‌شود.
+        </div>
+        <div class="pitfall"><strong>فایل ورودی را با خروجی نریز</strong>
+          <code>sort f &gt; f</code> قبل از اجرای sort فایل <code>f</code> را خالی می‌کند. خروجی را در فایل دیگری بریز، یا از
+          <code>sort -o f f</code> استفاده کن.
+        </div>
+        <div class="note"><strong>در سؤال‌های کوئرا فقط stdout سنجیده می‌شود</strong>
+          هر پیام دیباگ یا خطا را روی stderr بفرست (<code>&gt;&amp;2</code>)، وگرنه خروجی اشتباه حساب می‌شود.
+        </div>
+        <h3>here-doc و here-string</h3>
+        <pre>cat &lt;&lt; EOF              # متغیر داخل متن باز می‌شود
+سلام $USER
+EOF
+
+cat &lt;&lt; 'EOF'            # با کوت دور EOF هیچ‌چیز باز نمی‌شود
+سلام $USER
+EOF
+
+cat &lt;&lt;- EOF             # تب‌های اول خط حذف می‌شوند، پس داخل if می‌شود تورفتگی داد
+	سلام $USER
+	EOF
+
+cat &lt;&lt;&lt; "یک رشته"      # here-string: یک رشته را به‌عنوان ورودی می‌دهد
+read -r a b &lt;&lt;&lt; "1 2"    # رشته را در دو متغیر می‌ریزد</pre>
+        <p>متن داخل here-doc عیناً چاپ می‌شود، پس کامنت را داخل بدنه ننویس؛ می‌شود جزو خروجی. کلمهٔ پایان (<code>EOF</code>) باید
+          تنها در خط خودش باشد، بدون فاصلهٔ اضافه (مگر با <code>&lt;&lt;-</code> که فقط تب را می‌پذیرد).</p>
       </section>
 
       <section id="strings">
@@ -596,6 +808,18 @@ echo "${url%/a}"        # https://example.com</pre>
 echo "${text/a/A}"      # A|b|a   اولین
 echo "${text//a/A}"     # A|b|A   همه
 echo "${text//|/ }"     # a b a</pre>
+        <h3>تغییر حروف بزرگ و کوچک</h3>
+        <pre>name="HerBert"
+echo "${name,,}"        # herbert   همه کوچک
+echo "${name^^}"        # HERBERT   همه بزرگ
+low="herbert"
+echo "${low^}"          # Herbert   فقط حرف اول بزرگ
+
+[[ "${1,,}" == herbert ]]          # مقایسه بدون حساسیت به حروف
+[ "$(printf %s "$1" | tr A-Z a-z)" = herbert ]   # همان، برای sh</pre>
+        <div class="note"><strong>فقط بش ۴ به بالا</strong>
+          <code>${var,,}</code> و <code>${var^^}</code> در sh و در بش ۳ (نسخهٔ پیش‌فرض مک) کار نمی‌کنند. <code>tr</code> همه‌جا هست.
+        </div>
       </section>
 
       <section id="arrays">
@@ -616,6 +840,10 @@ days=(mon tue wed)
 for day in "${days[@]}"; do
   echo "$day"
 done</pre>
+        <div class="pitfall"><strong>ساختن آرایه فقط با پرانتز است</strong>
+          <code>arr=(a b c)</code> درست است. <code>arr=[a b c]</code> یا <code>arr={a b c}</code> آرایه نمی‌سازد: شل <code>b</code> را
+          دستور حساب می‌کند و <code>command not found</code> می‌دهد. آرایهٔ خالی را هم می‌شود با <code>declare -a arr</code> اعلام کرد.
+        </div>
         <div class="pitfall"><strong>ستاره در برابر @</strong>
           <code>"${hours[@]}"</code> هر خانه یک کلمه است. <code>"${hours[*]}"</code> همه را با فاصله به یک رشته تبدیل
           می‌کند. داخل حلقه تقریباً همیشه @ را با کوت بخواه.
@@ -723,7 +951,162 @@ esac</pre>
             <td><code>-z</code> / <code>-n</code></td>
             <td>رشته خالی / رشته ناتهی</td>
           </tr>
+          <tr>
+            <td><code>f1 -nt f2</code> / <code>f1 -ot f2</code></td>
+            <td>f1 جدیدتر / قدیمی‌تر از f2 است</td>
+          </tr>
+          <tr>
+            <td><code>!</code></td>
+            <td>نقیض، مثلاً <code>[ ! -e file ]</code> یا <code>if ! cmd; then</code></td>
+          </tr>
         </table>
+        <h3>[ ] یا [[ ]]؟</h3>
+        <p><code>[</code> خودش یک دستور است (همان <code>test</code>) و در sh هم هست. <code>[[ ]]</code> کلیدواژهٔ بش است؛ امن‌تر و
+          قوی‌تر، ولی در sh کار نمی‌کند.</p>
+        <table>
+          <tr>
+            <th></th>
+            <th><code>[ ]</code></th>
+            <th><code>[[ ]]</code></th>
+          </tr>
+          <tr>
+            <td>کجا کار می‌کند</td>
+            <td>بش و sh</td>
+            <td>فقط بش</td>
+          </tr>
+          <tr>
+            <td>متغیر بی‌کوت</td>
+            <td>باید کوت شود؛ متغیر خالی شرط را می‌شکند</td>
+            <td>لازم نیست، چون شکستن کلمه ندارد</td>
+          </tr>
+          <tr>
+            <td>مساوی بودن رشته</td>
+            <td><code>=</code> (در sh فقط همین)</td>
+            <td><code>==</code> یا <code>=</code></td>
+          </tr>
+          <tr>
+            <td>و / یا</td>
+            <td><code>-a</code> و <code>-o</code> منسوخ و مبهم‌اند. بهتر: دو <code>[ ]</code> با <code>&amp;&amp;</code> و <code>||</code></td>
+            <td><code>&amp;&amp;</code> و <code>||</code> داخل خودش</td>
+          </tr>
+          <tr>
+            <td>الگو و رجکس</td>
+            <td>ندارد</td>
+            <td><code>==</code> با glob، و <code>=~</code> با رجکس</td>
+          </tr>
+          <tr>
+            <td><code>&lt;</code> و <code>&gt;</code> روی رشته</td>
+            <td>باید <code>\&lt;</code> نوشته شود، وگرنه redirect است</td>
+            <td>آزاد</td>
+          </tr>
+        </table>
+        <pre>[ "$a" -ge 1 ] &amp;&amp; [ "$a" -le 10 ]      # بش و sh
+[[ $a -ge 1 &amp;&amp; $a -le 10 ]]             # فقط بش
+
+[[ $f == *.sh ]]                        # الگو: هر اسمی که به .sh ختم شود
+[[ "$f" == "*.sh" ]]                    # کوت شد: فقط خود رشتهٔ *.sh
+
+re='^[0-9]+$'
+if [[ $n =~ $re ]]; then echo "عدد است"; fi    # رجکس در متغیر، بی‌کوت</pre>
+        <div class="pitfall"><strong>فاصله داخل کروشه</strong>
+          <code>[ "$a" -eq 1 ]</code> درست است و <code>["$a" -eq 1]</code> خطا می‌دهد. چون <code>[</code> یک دستور است، باید از
+          آرگومان‌هایش جدا باشد و <code>]</code> هم آخرین آرگومان آن است.
+        </div>
+        <h3>الگوها در case و حروف بزرگ و کوچک</h3>
+        <pre>case "${1,,}" in           # همه را کوچک کن تا به حروف حساس نباشد
+  herbert | admin) echo "مدیر" ;;      # | یعنی «یا»
+  help)            echo "اسمت را بده" ;;
+  [0-9]*)          echo "با رقم شروع می‌شود" ;;
+  *)               echo "ناشناخته" ;;
+esac</pre>
+        <p><code>case</code> الگوی glob دارد (<code>*</code>، <code>?</code>، <code>[0-9]</code>)، نه رجکس. هر شاخه با <code>;;</code> تمام می‌شود و
+          <code>*)</code> آخر، شاخهٔ پیش‌فرض است. وقتی یک مقدار را با چند گزینه می‌سنجی از زنجیرهٔ <code>if / elif</code> خواناتر است.</p>
+        <p>منوی تعاملی با here-doc و case:</p>
+        <pre>cat &lt;&lt; EOF
+1 -> name
+2 -> hostname
+3 -> ip
+EOF
+read -r opt
+case $opt in
+  1) read -r -p "name: " name; echo "Hello $name" ;;
+  2) hostname ;;
+  3) hostname -I ;;
+  *) echo "invalid option" &gt;&amp;2 ;;
+esac</pre>
+        <p><code>hostname -I</code> آدرس‌های واقعی را می‌دهد. <code>hostname -i</code> اسم ماشین را resolve می‌کند و روی بعضی سیستم‌ها
+          <code>127.0.1.1</code> برمی‌گرداند.</p>
+      </section>
+
+      <section id="exitcodes">
+        <h2>کد خروج و $?</h2>
+        <p>هر دستور وقتی تمام می‌شود یک عدد از ۰ تا ۲۵۵ برمی‌گرداند. صفر یعنی موفق و هر عدد دیگر یعنی شکست. این عدد در
+          <code>$?</code> است، ولی با اجرای دستور بعدی عوض می‌شود.</p>
+        <table>
+          <tr>
+            <th>کد</th>
+            <th>معنی</th>
+          </tr>
+          <tr>
+            <td>0</td>
+            <td>موفق</td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>خطای عمومی. در grep یعنی «پیدا نشد»</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>استفادهٔ غلط از دستور. در grep یعنی خطا، مثلاً فایل نیست</td>
+          </tr>
+          <tr>
+            <td>126</td>
+            <td>فایل هست ولی اجرایی نیست</td>
+          </tr>
+          <tr>
+            <td>127</td>
+            <td>دستور پیدا نشد</td>
+          </tr>
+          <tr>
+            <td>128+n</td>
+            <td>با سیگنال n کشته شده: ۱۳۰ = Ctrl+C، ۱۳۷ = SIGKILL، ۱۴۳ = SIGTERM</td>
+          </tr>
+        </table>
+        <h3>if خود دستور را اجرا می‌کند</h3>
+        <pre>if grep -q "^root:" /etc/passwd; then echo "هست"; fi
+if ! ping -c 1 -W 1 example.com &gt; /dev/null; then echo "down" &gt;&amp;2; fi
+
+mkdir out &amp;&amp; cd out          # فقط اگر mkdir موفق بود
+cmd || echo "failed" &gt;&amp;2       # فقط اگر cmd شکست خورد
+cmd1 ; cmd2                     # هر دو، بی‌توجه به نتیجه</pre>
+        <p><code>[ ]</code> و <code>[[ ]]</code> هم فقط کد خروج می‌دهند. برای همین لازم نیست <code>[ $? -eq 0 ]</code> بنویسی؛ خود
+          دستور را بده به <code>if</code>.</p>
+        <h3>$? را فوراً ذخیره کن</h3>
+        <pre>grep -q "x" file
+rc=$?                          # قبل از هر دستور دیگر
+if [ "$rc" -eq 0 ]; then echo "پیدا شد"; fi
+
+false; echo "$?"               # 1
+false; [ 1 = 1 ]; echo "$?"    # 0   دستور [ ] مقدار را عوض کرد</pre>
+        <h3>exit در برابر return</h3>
+        <p><code>exit n</code> کل اسکریپت را می‌بندد. <code>return n</code> فقط از تابع (یا از فایلی که با <code>source</code> اجرا شده) بیرون
+          می‌آید و کد خروج همان تابع می‌شود. بدون عدد، کد آخرین دستور برگردانده می‌شود. عددها بین ۰ تا ۲۵۵اند و ۲۵۶ می‌شود ۰.
+          با <code>return</code> نمی‌شود داده برگرداند، فقط وضعیت.</p>
+        <pre>is_boss(){
+  [[ "${1,,}" == herbert ]]      # کد خروج همین شرط، کد خروج تابع می‌شود
+}
+if is_boss "$user"; then echo "خوش آمدی"; else echo "ناشناس" &gt;&amp;2; fi</pre>
+        <div class="pitfall"><strong>تله‌های set -e</strong>
+          <ul>
+            <li><code>((i++))</code> وقتی i صفر است کد ۱ می‌دهد و اسکریپت می‌میرد. <code>i=$((i + 1))</code> بنویس.</li>
+            <li><code>read</code> وقتی به آخر فایلِ بدون <code>\n</code> برسد شکست می‌خورد، ولی متغیر را پر می‌کند. زیر <code>set -e</code>
+              اسکریپت همان‌جا می‌میرد. راهش <code>read -r x || [[ -n $x ]]</code> است.</li>
+            <li><code>local x=$(cmd)</code> کد خروج <code>cmd</code> را قورت می‌دهد، چون کد خروج <code>local</code> صفر است. اول
+              <code>local x</code> و بعد <code>x=$(cmd)</code> بنویس.</li>
+            <li>شکست وسط پایپ دیده نمی‌شود، مگر <code>set -o pipefail</code> داشته باشی.</li>
+            <li>دستورِ داخل شرط <code>if</code> یا قبل از <code>&amp;&amp;</code> و <code>||</code> باعث مردن اسکریپت نمی‌شود.</li>
+          </ul>
+        </div>
       </section>
 
       <section id="loops">
@@ -769,6 +1152,21 @@ seq 0 2 10          # 0 2 4 6 8 10
 for ((i = start; i &lt; end; i++)); do
   hours[i]=1
 done</pre>
+        <h3>break و continue</h3>
+        <pre>for n in 1 2 3 4 5; do
+  [[ $n -eq 2 ]] &amp;&amp; continue    # این دور را رد کن
+  [[ $n -eq 4 ]] &amp;&amp; break       # از حلقه بیرون بیا
+  echo "$n"
+done                              # 1 3</pre>
+        <h3>تکرار تا ورودی درست بیاید</h3>
+        <pre>re='^[0-9]+$'
+while true; do
+  read -r -p "عدد: " n
+  if [[ $n =~ $re ]]; then break; fi
+  echo "عدد نیست" &gt;&amp;2
+done</pre>
+        <p><code>=~</code> رجکس را چک می‌کند. رجکس را در متغیر بگذار و بی‌کوت بیاور. رشتهٔ خالی هم با این الگو رد می‌شود، پس ورودی خالی هم
+          خطا حساب می‌شود.</p>
         <h3>هوا، با اسم متغیر درست</h3>
         <pre>for city in $(cat cities.txt); do
   weather=$(curl -fsS "http://wttr.in/${city}?format=3")
@@ -776,6 +1174,126 @@ done</pre>
 done</pre>
         <p>اگر اسم شهر فاصله دارد، به‌جای <code>$(cat ...)</code> از <code>while read</code> استفاده کن. cat خط را از
           روی فاصله می‌شکند.</p>
+      </section>
+
+      <section id="readfile">
+        <h2>خواندن فایل در اسکریپت</h2>
+        <p>ورودی سؤال‌های کوئرا معمولاً یک فایل در پوشهٔ کاری است، نه stdin. اسکریپت باید خودش آن را باز کند؛ وگرنه روی stdin منتظر
+          می‌ماند و تا ابد می‌ایستد. قالب امن برای خواندن خط‌به‌خط:</p>
+        <pre>while IFS= read -r line || [[ -n $line ]]; do
+  [[ -z ${line//[[:space:]]/} ]] &amp;&amp; continue   # خط خالی
+  read -r id gate badge event &lt;&lt;&lt; "$line"        # شکستن به ستون
+  echo "$id $event"
+done &lt; gate-log.txt</pre>
+        <table>
+          <tr>
+            <th>تکه</th>
+            <th>چرا لازم است</th>
+          </tr>
+          <tr>
+            <td><code>IFS=</code></td>
+            <td>فاصله‌های اول و آخر خط را نمی‌خورد</td>
+          </tr>
+          <tr>
+            <td><code>-r</code></td>
+            <td>بک‌اسلش را معمولی می‌خواند</td>
+          </tr>
+          <tr>
+            <td><code>|| [[ -n $line ]]</code></td>
+            <td>اگر خط آخر <code>\n</code> نداشته باشد، <code>read</code> شکست می‌خورد ولی متغیر پر است. بدون این تکه آخرین خط گم
+              می‌شود</td>
+          </tr>
+          <tr>
+            <td><code>${line//[[:space:]]/}</code></td>
+            <td>همهٔ فاصله‌ها و تب‌ها را برمی‌دارد تا خطِ فقط‌فاصله هم خالی حساب شود</td>
+          </tr>
+          <tr>
+            <td><code>read -r a b c &lt;&lt;&lt; "$line"</code></td>
+            <td>خط را از روی هر تعداد فاصله می‌شکند. اگر ستون کم باشد، باقی متغیرها خالی‌اند و اگر زیاد باشد، آخرین متغیر بقیه را
+              می‌گیرد</td>
+          </tr>
+        </table>
+        <div class="pitfall"><strong>خط آخر بدون \n</strong>
+          فایلی که با <code>printf 'IRAN' &gt; f</code> ساخته شود <code>\n</code> آخر ندارد. اگر <code>|| [[ -n $line ]]</code> را
+          ننویسی، حلقه برای آخرین خط اجرا نمی‌شود. زیر <code>set -e</code> خودِ <code>read</code> هم اسکریپت را می‌کشد.
+        </div>
+        <pre>IFS= read -r code &lt; team.txt || [[ -n $code ]]    # فایل یک‌خطی، با \n آخر یا بی‌آن
+printf 'hello %s\n' "$code"</pre>
+        <h3>چهار راه غلط</h3>
+        <table>
+          <tr>
+            <th>کد</th>
+            <th>مشکل</th>
+          </tr>
+          <tr>
+            <td><code>for line in $(cat f)</code></td>
+            <td>خط را از روی فاصله می‌شکند و <code>*</code> را به اسم فایل‌ها باز می‌کند</td>
+          </tr>
+          <tr>
+            <td><code>cut -d' ' -f2</code></td>
+            <td>با دو فاصلهٔ پشت‌سرهم ستون خالی می‌دهد. <code>read -r</code> یا awk استفاده کن</td>
+          </tr>
+          <tr>
+            <td><code>cat f | while read ...</code></td>
+            <td>حلقه در زیرشل اجرا می‌شود و متغیرهایش بعد از <code>done</code> گم می‌شوند</td>
+          </tr>
+          <tr>
+            <td><code>sort f &gt; f</code></td>
+            <td>قبل از اجرای sort فایل خالی می‌شود. از <code>sort -o f f</code> استفاده کن</td>
+          </tr>
+        </table>
+        <pre>n=0
+cat f | while read -r x; do n=$((n + 1)); done
+echo "$n"        # 0   حلقه در زیرشل بود
+
+n=0
+while read -r x; do n=$((n + 1)); done &lt; f
+echo "$n"        # تعداد خط‌ها</pre>
+        <h3>همان کار با awk</h3>
+        <p>awk خط خالی را خودش رد می‌کند (<code>NF</code> صفر است)، آخرین خطِ بدون <code>\n</code> را هم می‌خواند و ستون‌ها را با هر
+          تعداد فاصله می‌شکند. برای شمارش و جمع معمولاً از حلقهٔ بش کوتاه‌تر است. این مثال، تعداد ورود و خروج گیت را می‌شمارد:</p>
+        <pre>awk '$4 == "IN"  { n++; if (n &gt; p) p = n }
+    $4 == "OUT" { n-- }
+    END { printf "INSIDE=%d\nPEAK=%d\n", n, p }' gate-log.txt</pre>
+        <pre>mapfile -t lines &lt; f      # هر خط یک خانهٔ آرایه (بش ۴ به بالا)
+echo "${#lines[@]}"        # تعداد خط‌ها
+echo "${lines[0]}"         # خط اول</pre>
+      </section>
+
+      <section id="functions">
+        <h2>تابع و local</h2>
+        <p>تابع باید قبل از اولین صدا زدنش تعریف شده باشد. صدا زدنش مثل یک دستور است: بدون پرانتز و با آرگومان‌هایی که با فاصله جدا
+          می‌شوند. داخل تابع <code>$1</code>، <code>$2</code> و <code>$#</code> مال خود تابع‌اند، نه اسکریپت؛ فقط <code>$0</code> همان اسم
+          اسکریپت می‌ماند.</p>
+        <pre>showname(){
+  local name="$1"
+  echo "Hello $name"
+}
+showname Herbert              # Hello Herbert
+msg=$(showname Sara)          # خروجی تابع داخل متغیر
+
+showuptime(){
+  local up since
+  up=$(uptime -p | cut -c4-)
+  since=$(uptime -s)
+  printf 'up for %s, since %s\n' "$up" "$since"
+}
+showuptime
+
+forward(){ other_cmd "$@"; }  # آرگومان‌ها را دست‌نخورده پاس بده</pre>
+        <div class="pitfall"><strong>متغیر تابع به‌طور پیش‌فرض سراسری است</strong>
+          اگر داخل تابع <code>up=5</code> بنویسی، بعد از تابع هم <code>$up</code> برابر ۵ است و می‌تواند متغیر هم‌نامِ اسکریپت را خراب
+          کند. <code>local up=5</code> آن را به تابع محدود می‌کند. <code>local</code> فقط داخل تابع معنی دارد.
+        </div>
+        <div class="pitfall"><strong>local x=$(cmd) شکست را پنهان می‌کند</strong>
+          کد خروج <code>local</code> صفر است و جای کد <code>cmd</code> را می‌گیرد، پس <code>set -e</code> و <code>$?</code> شکست را
+          نمی‌بینند. اول <code>local x</code> و بعد <code>x=$(cmd)</code> بنویس. ShellCheck این را SC2155 می‌نامد.
+        </div>
+        <div class="note"><strong>تابع داده برنمی‌گرداند، فقط وضعیت</strong>
+          <code>return n</code> یک عدد ۰ تا ۲۵۵ است و کد خروج تابع می‌شود. برای برگرداندن متن، آن را با <code>echo</code> یا
+          <code>printf</code> چاپ کن و بیرون با <code>$(f)</code> بگیر. پیام خطا را روی stderr بفرست تا وارد مقدار گرفته‌شده نشود.
+          تفاوت <code>return</code> و <code>exit</code> در بخش <a href="#exitcodes">کد خروج</a> است.
+        </div>
       </section>
 
       <section id="wc">
@@ -866,6 +1384,11 @@ name=$(printf "%s" "$name" | sed "s#|$url\$##")</pre>
           لینوکس: <code>sed -i 's/a/b/g' file</code>. مک: <code>sed -i '' 's/a/b/g' file</code>. برای جزوه، خروجی را در
           فایل تازه بریز تا غافلگیر نشوی: <code>sed 's/a/b/g' file &gt; file.new</code>
         </div>
+        <div class="note"><strong>نسخهٔ پشتیبان با -i.bak</strong>
+          <code>sed -i.bak 's/a/b/g' file</code> فایل را عوض می‌کند و نسخهٔ قبلی را در <code>file.bak</code> نگه می‌دارد. پسوند باید به
+          <code>-i</code> بچسبد؛ این شکل روی گنو و مک هر دو کار می‌کند. اگر متغیر شل را داخل الگو می‌گذاری از دابل‌کوت استفاده کن:
+          <code>sed "s/$old/$new/g" file</code>. ولی اگر مقدار متغیر <code>/</code> یا <code>&amp;</code> داشته باشد، دستور خراب می‌شود.
+        </div>
       </section>
 
       <section id="awk">
@@ -881,6 +1404,13 @@ awk 'NR &gt; 1 { print }' file             # بدون هدر
 awk '{ sum += $1 } END { print sum }' numbers.txt</pre>
         <p>در مثال بوکمارک، url ستون آخر است:</p>
         <pre>url=$(printf "%s" "$line" | awk -F'|' '{ print $NF }')</pre>
+        <h3>متغیر شل داخل awk</h3>
+        <pre>n=3
+awk -v n="$n" 'NR == n' file                        # خط n‌ام
+tr '\n' ' ' &lt; file | awk -v n="$n" '{ print $n }'    # کلمهٔ n‌ام کل فایل
+hostname -I | awk '{ print $1 }'                    # اولین آدرس IP</pre>
+        <p>شل داخل تک‌کوتِ awk چیزی باز نمی‌کند، پس مقدار را با <code>-v</code> به awk می‌دهی. awk هر خط را یک ردیف می‌بیند؛ برای
+          «کلمهٔ n‌ام فایل» اول با <code>tr</code> خط‌ها را به فاصله تبدیل می‌کنیم تا کل فایل یک خط شود.</p>
       </section>
 
       <section id="regex">
@@ -1049,6 +1579,97 @@ echo "$greeting"</pre>
           فقط روی رشته‌ای که خودت ساخته‌ای و هیچ ورودی خارجی داخلش نیست. حتی آن‌وقت هم آرایهٔ دستور معمولاً همان کار را
           می‌کند. خروجی <code>declare -p</code> را گاهی با eval برمی‌گردانند، چون خودش سینتکس بش است؛ باز هم منبعش باید
           مطمئن باشد.
+        </div>
+      </section>
+
+      <section id="video">
+        <h2>فیلم انگلیسی Bash Scripting Tutorial for Beginners</h2>
+        <p>فیلم <a href="https://www.youtube.com/watch?v=tK9Oc6AEnR4">Bash Scripting Tutorial for Beginners</a> از کانال freeCodeCamp است
+          و مدرسش Herbert از Herbertech است. کد فیلم در <a href="https://github.com/herbertech/bash-intro-tutorial">ریپوی خود مدرس</a>
+          هست. این بخش نکتهٔ هر فصل را کنار جای آن در جزوه می‌گذارد.</p>
+        <table>
+          <tr>
+            <th>فصل فیلم</th>
+            <th>نکتهٔ اصلی</th>
+            <th>در جزوه</th>
+          </tr>
+          <tr>
+            <td>مقدمه</td>
+            <td>بش یعنی Bourne Again Shell؛ همه‌جا هست و سبک است. برای کار سنگین (شیءگرایی، ساختار داده، منطق پیچیده) پایتون بهتر است و ابزارهایی مثل
+              Ansible بعضی کارها را جایگزین کرده‌اند</td>
+            <td><a href="#linux">لینوکس و شل</a></td>
+          </tr>
+          <tr>
+            <td>اولین اسکریپت</td>
+            <td>shebang، کامنت با <code>#</code>، اجرای دستورها خط‌به‌خط از بالا، و اسم متغیر که حساس به حروف است و فقط حرف، رقم و
+              <code>_</code> دارد</td>
+            <td><a href="#script">شروع اسکریپت</a>، <a href="#vars">متغیرها</a></td>
+          </tr>
+          <tr>
+            <td>پارامتر موقعیتی</td>
+            <td><code>$0</code> اسم اسکریپت، <code>$1</code> تا <code>$n</code>، و چک کردن <code>$#</code> قبل از استفاده</td>
+            <td><a href="#vars">متغیرها</a></td>
+          </tr>
+          <tr>
+            <td>redirect</td>
+            <td><code>&gt;</code> <code>&gt;&gt;</code> <code>2&gt;</code> <code>2&gt;&gt;</code> <code>&amp;&gt;</code> <code>&lt;</code>
+              <code>&lt;&lt;</code> و <code>|</code></td>
+            <td><a href="#redirect">خروجی، خطا و redirect</a></td>
+          </tr>
+          <tr>
+            <td>test operators، if/elif/else</td>
+            <td>عددی، رشته‌ای، فایلی و منطقی؛ <code>-z</code> و <code>-n</code>؛ <code>-nt</code> و <code>-ot</code></td>
+            <td><a href="#tests">شرط و مقایسه</a></td>
+          </tr>
+          <tr>
+            <td>case</td>
+            <td>وقتی چند مقدار را می‌سنجی از if/elif خواناتر است. <code>a | b)</code> برای «یا» و <code>*)</code> برای بقیه</td>
+            <td><a href="#tests">شرط و مقایسه</a></td>
+          </tr>
+          <tr>
+            <td>آرایه‌ها</td>
+            <td><code>arr=(…)</code>، <code>${arr[i]}</code>، <code>${arr[@]}</code>، <code>declare -a</code>، <code>arr[i]=x</code>،
+              <code>arr+=(…)</code></td>
+            <td><a href="#arrays">آرایه‌ها</a></td>
+          </tr>
+          <tr>
+            <td>تابع</td>
+            <td>تعریف و صدا زدن، آرگومان تابع، و متغیر سراسری در برابر <code>local</code></td>
+            <td><a href="#functions">تابع و local</a></td>
+          </tr>
+          <tr>
+            <td>exit code</td>
+            <td><code>return 0</code> و <code>return 1</code> در تابع و چک کردن با <code>$?</code></td>
+            <td><a href="#exitcodes">کد خروج</a></td>
+          </tr>
+          <tr>
+            <td>AWK و SED</td>
+            <td>در پروژهٔ Jarvis از <code>sed -i.backup</code> و از <code>tr</code> همراه <code>awk -v</code> استفاده شده</td>
+            <td><a href="#sed">sed</a>، <a href="#awk">awk</a></td>
+          </tr>
+        </table>
+        <h3>دو پروژهٔ فیلم</h3>
+        <ul>
+          <li><b>منوی انتخاب:</b> <code>cat &lt;&lt; EOF</code> برای چاپ منو، <code>read</code> برای گرفتن گزینه و <code>case</code> برای اجرا.
+            مثالش در بخش شرط و مقایسه است.</li>
+          <li><b>Jarvis:</b> اسکریپت مدیریتی با آرگومان‌های <code>help</code>، <code>ip</code>، <code>hostname</code>، <code>uptime</code>،
+            <code>datetime</code>، <code>replacewords</code>، <code>readelement</code> و <code>countdown</code>. هر کدام یک تابع است و
+            <code>case "$1"</code> صدایشان می‌زند. <code>replacewords</code> با <code>sed -i.backup</code> کار می‌کند، <code>readelement</code>
+            با <code>tr</code> و <code>awk -v</code>، <code>countdown</code> با <code>seq</code> و <code>sleep</code>، و آخر اسکریپت هر
+            اجرا با <code>&gt;&gt;</code> در یک فایل لاگ نوشته می‌شود.</li>
+        </ul>
+        <div class="pitfall"><strong>اشتباه‌هایی در کد فیلم که نباید کپی کنی</strong>
+          <ul>
+            <li><code>[ ${1,,} = herbert ]</code> بی‌کوت است. اگر آرگومان خالی باشد خطای <code>unary operator expected</code> می‌دهد. درست:
+              <code>[ "${1,,}" = herbert ]</code> یا <code>[[ ${1,,} == herbert ]]</code>.</li>
+            <li><code>read $NAME</code> در منوی فیلم غلط است و باید <code>read NAME</code> باشد. نتیجهٔ غلط: <code>Hello</code> بدون اسم.</li>
+            <li><code>echo Hello $FIRST_NAME $LAST_NAME</code> و <code>ls $path</code> بی‌کوت‌اند و اگر مقدار فاصله داشته باشد می‌شکنند.</li>
+            <li>README فیلم می‌گوید آرایه را می‌شود با <code>()</code> یا <code>[]</code> یا <code>{}</code> ساخت. فقط پرانتز درست است.</li>
+            <li><code>-a</code> و <code>-o</code> داخل <code>[ ]</code> منسوخ و مبهم‌اند. دو <code>[ ]</code> با <code>&amp;&amp;</code> و
+              <code>||</code> یا <code>[[ ]]</code> بنویس.</li>
+            <li>تابع‌های فیلم <code>local up=$(uptime -p ...)</code> دارند که کد خروج را قورت می‌دهد. اعلام و مقداردهی را جدا کن.</li>
+            <li><code>$?</code> باید بلافاصله بعد از تابع خوانده شود. اگر یک <code>echo</code> وسط بیفتد، مقدارش عوض می‌شود.</li>
+          </ul>
         </div>
       </section>
 
